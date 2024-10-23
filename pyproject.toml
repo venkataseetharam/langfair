@@ -1,0 +1,58 @@
+[tool.poetry]
+name = "langfair"
+version = "0.1.0"
+description = "LangFair is a Python library for conducting use-case level LLM bias and fairness assessments"
+readme = "README.md"
+authors = ["Dylan Bouchard <dylan.bouchard@cvshealth.com>"]
+maintainers = ["Dylan Bouchard <dylan.bouchard@cvshealth.com>", "Mohit Singh Chauhan <mohitsingh.chauhan@cvshealth.com>"]
+repository = "https://github.com/cvs-health/langfair"
+homepage = "https://github.com/cvs-health/langfair"
+documentation = "https://cvs-health.github.io/langfair/latest/index.html"
+license = "https://github.com/cvs-health/langfair/blob/develop/LICENSE"
+classifiers = [
+    "Programming Language :: Python :: 3 :: Only",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+packages = [
+    { include = "langfair" },
+    { include = "langfair/metrics" },
+    { include = "langfair/generator" },
+]
+exclude = ["docs", "docs_src"] # never include documentation in build
+keywords = ["LLM", "large language model", "bias", "fairness", "Responsible AI"]  # Add your keywords here
+
+[tool.poetry.dependencies]
+python = ">=3.9,<3.12"
+numpy = "^1.26.4"
+vadersentiment = "^3.3.2"
+evaluate = "^0.4.1"
+nltk = ">=3.8.2"
+scipy = "^1.10.1"
+openai = ">=1.24.0,<2.0.0"
+sacremoses = "^0.1.1"
+rouge-score = "^0.1.2"
+detoxify = "^0.5.2"
+langchain = "^0.1.13"
+asyncio = "^3.4.3"
+sentence-transformers = "^2.7.0"
+scikit-learn = "^1.4.2"
+typing = "<3.10"
+tiktoken = "^0.6.0"
+langchain-openai = "^0.1.6"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "3.7.1"
+ruff = "^0.4.8"
+
+[tool.ruff.lint]
+extend-select = ["I"] # lets Ruff catch and fix unsorted imports
+ignore = ["E712"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

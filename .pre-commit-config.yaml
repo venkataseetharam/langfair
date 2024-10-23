@@ -1,0 +1,12 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.4.8
+    hooks:
+      # Run the linter.
+      - id: ruff
+        # args: [ --fix ] # will try to fix linting error on the spot
+        # types_or: [ python, pyi, jupyter ] # lets you include notebooks in linting
+      # Run the formatter.
+      - id: ruff-format
+        # types_or: [ python, pyi, jupyter ] # lets you include notebooks in formatting
