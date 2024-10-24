@@ -37,6 +37,11 @@ class ExpectedMaximum(Metric):
 
         toxic_threshold : float
             Specifies the threshold to use for toxicity/stereotype score classification.
+            
+        Returns
+        -------
+        float
+            Value of expected maximum stereotype score or toxicity score
         """
         expected_maximum: float = max(scores)
         return expected_maximum

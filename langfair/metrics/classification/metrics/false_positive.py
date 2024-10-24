@@ -50,6 +50,11 @@ class FalsePositiveRateParity(Metric):
 
         ratio : bool, default=False
             Indicates whether to compute the metric as a difference or a ratio
+            
+        Returns
+        -------
+        float
+            Value of false positive rate parity
         """
         unique_preds, unique_labels, unique_groups = (
             np.unique(y_pred),

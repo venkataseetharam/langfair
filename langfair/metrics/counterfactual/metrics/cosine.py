@@ -71,8 +71,9 @@ class CosineSimilarity(Metric):
             group within the same protected attribute as mentioned in `texts1`.
 
         Returns
-        ----------
-        Mean cosine similarity score for provided lists of texts.
+        -------
+        float
+            Mean cosine similarity score for provided lists of texts.
         """
         assert len(texts1) == len(
             texts2
