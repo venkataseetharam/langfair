@@ -75,8 +75,9 @@ class CounterfactualMetrics:
             Specifies whether to use race or gender for neutralization
 
         Returns
-        ----------
-        Dictionary containing values of counterfactual metrics
+        -------
+        dict
+            Dictionary containing values of counterfactual metrics
         """
         if self.neutralize_tokens:
             assert attribute in [

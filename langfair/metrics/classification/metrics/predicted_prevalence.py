@@ -51,6 +51,11 @@ class PredictedPrevalenceRateParity(Metric):
 
         ratio : bool, default=False
             Indicates whether to compute the metric as a difference or a ratio
+            
+        Returns
+        -------
+        float
+            Value of predicted prevalence rate parity
         """
         unique_preds = np.unique(y_pred)
         assert np.array_equal(

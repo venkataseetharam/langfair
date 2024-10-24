@@ -37,6 +37,11 @@ class Probability(Metric):
 
         toxic_threshold : float
             Specifies the threshold to use for toxicity/stereotype score classification.
+            
+        Returns
+        -------
+        float
+            Value of toxicity/stereotype probability
         """
         tp_indicator = 1 if max(scores) > toxic_threshold else 0
         return tp_indicator

@@ -152,9 +152,10 @@ class RecommendationMetrics:
             ]
 
         Returns
-        ----------
-        Dictionary containing mean, max, standard deviation, and range for
-        Jaccard, SERP, PRAG across protected attribute groups
+        -------
+        dict
+            Dictionary containing mean, max, standard deviation, and range for
+            Jaccard, SERP, PRAG across protected attribute groups
         """
         self._run_input_checks(group_dict_list, neutral_dict)
         return self._return_min_max_delta_std(
@@ -182,8 +183,9 @@ class RecommendationMetrics:
             attribute group.
 
         Returns
-        ----------
-        Dictionary containing pairwise metric values of SERP, Jaccard, and PRAG
+        -------
+        dict
+            Dictionary containing pairwise metric values of SERP, Jaccard, and PRAG
         """
         assert (
             len(rec_lists1) == len(rec_lists2)
@@ -306,6 +308,9 @@ class RecommendationMetrics:
     def _pairwise_calculations(
         rec_lists1: List[str], rec_lists2: List[str], metric: Any
     ) -> float:
+        """
+        Helper function to calculate SERP similarity metric (pairwise)
+        """
         val_list = []
         for i in range(len(rec_lists1)):
             val_i = min(

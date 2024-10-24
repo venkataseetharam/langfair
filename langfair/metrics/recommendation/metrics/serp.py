@@ -37,8 +37,9 @@ class SERP(Metric):
             Another list of recommendation from an LLM model.
 
         Returns
-        ----------
-        SERP metric value for the two provided lists of recommendations (float)
+        -------
+        float
+            SERP metric value for the two provided lists of recommendations (float)
         """
         K = len(list1)
         if not list2:

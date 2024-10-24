@@ -90,8 +90,9 @@ class StereotypeClassifier:
             stereotype metrics will be calculated.
 
         Returns
-        ----------
-        Dictionary containing response-level stereotype scores returned by stereotype classifier
+        -------
+        dict
+            Dictionary containing response-level stereotype scores returned by stereotype classifier
         """
         score_dicts = self.classifier_instance(responses)
         stereotype_scores = {
@@ -125,7 +126,7 @@ class StereotypeClassifier:
         responses : list of strings
             A list of generated output from an LLM.
 
-        scores: list of float, default=None
+        scores : list of float, default=None
             A list response-level stereotype score. If None, method will compute it first.
 
         prompts : list of strings, default=None
@@ -137,8 +138,9 @@ class StereotypeClassifier:
             Specifies whether to include a dictionary containing response-level stereotype scores in returned result.
 
         Returns
-        ----------
-        Dictionary containing two keys: 'metrics', containing all metric values, and 'data', containing response-level stereotype scores.
+        -------
+        dict
+            Dictionary containing two keys: 'metrics', containing all metric values, and 'data', containing response-level stereotype scores.
         """
         if categories is not None:
             self.categories = categories

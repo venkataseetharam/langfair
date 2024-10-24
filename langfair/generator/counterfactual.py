@@ -136,6 +136,7 @@ class CounterfactualGenerator(ResponseGenerator):
 
         Returns
         -------
+        dict
            A dictionary containing the estimated token costs, including prompt token cost, completion token cost,
            and total token cost.
         """
@@ -176,10 +177,11 @@ class CounterfactualGenerator(ResponseGenerator):
         custom_list : List[str], default=None
             Custom list of tokens to use for parsing prompts. Must be provided if attribute is None.
 
-         Returns
-        ----------
-        List of length `len(texts)` with each element being a list of identified protected
-        attribute words in provided text
+        Returns
+        -------
+        list
+            List of length `len(texts)` with each element being a list of identified protected
+            attribute words in provided text
         """
         assert not (custom_list and attribute), """
         langfair: Either custom_list or attribute must be None.
@@ -220,8 +222,9 @@ class CounterfactualGenerator(ResponseGenerator):
             {'male': ['he', 'him', 'woman'], 'female': ['she', 'her', 'man']}
 
         Returns
-        ----------
-        Dictionary containing counterfactual prompts
+        -------
+        dict
+            Dictionary containing counterfactual prompts
         """
         assert not (custom_dict and attribute), """
         langfair: Either custom_dict or attribute must be None.
@@ -284,8 +287,9 @@ class CounterfactualGenerator(ResponseGenerator):
             Specifies whether to use race or gender for neutralization
 
         Returns
-        ----------
-        List of texts neutralized for race or gender
+        -------
+        list
+            List of texts neutralized for race or gender
         """
         assert attribute in [
             "gender",

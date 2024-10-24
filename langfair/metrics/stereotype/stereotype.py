@@ -74,8 +74,9 @@ class StereotypeMetrics:
             Specifies attributes for stereotype classifier metrics. Includes both race and gender by default.
 
         Returns
-        ----------
-        Dictionary containing two keys: 'metrics', containing all metric values, and 'data', containing response-level stereotype scores.
+        -------
+        dict
+            Dictionary containing two keys: 'metrics', containing all metric values, and 'data', containing response-level stereotype scores.
         """
         metric_values = {}
         for metric in self.metrics:

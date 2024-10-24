@@ -70,8 +70,9 @@ class RougelSimilarity(Metric):
             group within the same protected attribute as mentioned in `texts1`.
 
         Returns
-        ----------
-        Mean ROUGE-L score for provided lists of texts.
+        -------
+        float
+            Mean ROUGE-L score for provided lists of texts.
         """
         rouge_scores = [
             self.rouge_scorer.score(t1, t2)[self.rouge_metric].fmeasure

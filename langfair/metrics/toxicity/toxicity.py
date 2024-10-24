@@ -134,8 +134,9 @@ class ToxicityMetrics:
             metrics will be calculated.
 
         Returns
-        ----------
-        List of toxicity scores corresponding to provided responses
+        -------
+        list of float
+            List of toxicity scores corresponding to provided responses
         """
         if self.custom_classifier:
             return self.custom_classifier.predict(responses)
@@ -175,9 +176,10 @@ class ToxicityMetrics:
             Indicates whether to include response-level toxicity scores in results dictionary returned by this method.
 
         Returns
-        ----------
-        Dictionary containing evaluated metric values and data used to compute metrics, including toxicity scores, corresponding
-        responses, and prompts (if applicable).
+        -------
+        dict
+            Dictionary containing evaluated metric values and data used to compute metrics, including toxicity scores, corresponding
+            responses, and prompts (if applicable).
         """
         if scores is None:
             print("langfair: Computing toxicity scores...")
