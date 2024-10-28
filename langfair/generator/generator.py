@@ -101,6 +101,7 @@ class ResponseGenerator:
 
         Returns
         -------
+        dict
            A dictionary containing the estimated token costs, including prompt token cost, completion token cost,
            and total token cost.
         """
@@ -193,25 +194,25 @@ class ResponseGenerator:
             or Gehman et al., 2020 (https://aclanthology.org/2020.findings-emnlp.301/).
 
         Returns
-        ----------
+        -------
         dict
-        A dictionary with two keys: 'data' and 'metadata'.
-        'data' : dict
-            A dictionary containing the prompts and responses.
-            'prompt' : list
-                A list of prompts.
-            'response' : list
-                A list of responses corresponding to the prompts.
-        'metadata' : dict
-            A dictionary containing metadata about the generation process.
-            'non_completion_rate' : float
-                The rate at which the generation process did not complete.
-            'temperature' : float
-                The temperature parameter used in the generation process.
-            'count' : int
-                The count of prompts used in the generation process.
-            'system_prompt' : str
-                The system prompt used for generating responses
+            A dictionary with two keys: 'data' and 'metadata'.
+            'data' : dict
+                A dictionary containing the prompts and responses.
+                'prompt' : list
+                    A list of prompts.
+                'response' : list
+                    A list of responses corresponding to the prompts.
+            'metadata' : dict
+                A dictionary containing metadata about the generation process.
+                'non_completion_rate' : float
+                    The rate at which the generation process did not complete.
+                'temperature' : float
+                    The temperature parameter used in the generation process.
+                'count' : int
+                    The count of prompts used in the generation process.
+                'system_prompt' : str
+                    The system prompt used for generating responses
         """
         assert isinstance(self.llm, langchain_core.runnables.base.Runnable), """
             langchain_llm must be an instance of langchain_core.runnables.base.Runnable

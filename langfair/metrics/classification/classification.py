@@ -82,8 +82,9 @@ class ClassificationMetrics:
             Indicates whether to compute the metric as a difference or a ratio
 
         Returns
-        ----------
-        Dictionary containing specified metric values
+        -------
+        dict
+            Dictionary containing specified metric values
         """
         return {
             metric.name: metric.evaluate(

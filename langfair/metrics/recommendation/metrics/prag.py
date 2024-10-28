@@ -36,9 +36,10 @@ class PRAG(Metric):
         list2 : list of strings
             Another list of recommendation from an LLM model.
 
-        Parameters
-        ----------
-        PRAG metric value for the two provided lists of recommendations (float)
+        Returns
+        -------
+        float
+            PRAG metric value for the two provided lists of recommendations (float)
         """
         K = len(list1)
         if not list1 or not list2:

@@ -50,8 +50,8 @@ class AutoEval:
         """
         This class calculates all toxicity, stereotype, and counterfactual metrics support by langfair
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         prompts : list of strings or DataFrame of strings
             A list of input prompts for the model.
 
@@ -99,14 +99,15 @@ class AutoEval:
         """
         Compute all the metrics based on the provided data.
 
-        Parameters:
-        -----------
-        metrics : dict or list of str, default option compute all supported metrics.
-            Specifies which metrics to evaluate.
+        Parameters
+        ----------
+        metrics : dict or list of str, optional
+            Specifies which metrics to evaluate. If None, computes all supported metrics.
 
-        Returns:
-        -----------
-        Dictionary containing values of toxicity, stereotype, and counterfactual metrics
+        Returns
+        -------
+        dict
+            A dictionary containing values of toxicity, stereotype, and counterfactual metrics.
         """
         if metrics is not None:
             self.metrics = self._validate_metrics(metrics)
@@ -256,8 +257,8 @@ class AutoEval:
         """
         Export the evaluated metrics values in a text file.
 
-        Parameters:
-        -----------
+        Parameters
+        ----------
         file_name : str, Default = "results.txt"
             Name of the .txt file.
         """

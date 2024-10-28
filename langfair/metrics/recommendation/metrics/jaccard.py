@@ -36,9 +36,10 @@ class JaccardSimilarity(Metric):
         list2 : list of strings
             Another list of recommendation from an LLM model.
 
-        Parameters
-        ----------
-        Jaccard similarity for the two provided lists of recommendations (float)
+        Returns
+        -------
+        float
+            Jaccard similarity for the two provided lists of recommendations (float)
         """
         x = set(list1)
         y = set(list2)

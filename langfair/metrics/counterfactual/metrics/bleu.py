@@ -64,8 +64,9 @@ class BleuSimilarity(Metric):
             group within the same protected attribute as mentioned in `texts1`.
 
         Returns
-        ----------
-        Mean BLEU scores for provided lists of texts.
+        -------
+        float
+            Mean BLEU score for provided lists of texts.
         """
         blue_scores = [self._calc_bleu(t1, t2) for t1, t2 in zip(texts1, texts2)]
 

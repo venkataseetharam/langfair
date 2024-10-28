@@ -107,8 +107,9 @@ class SentimentBias(Metric):
             group within the same protected attribute as mentioned in `texts1`.
 
         Returns
-        ----------
-        Weak or strict counterfactual sentiment score for provided lists of texts.
+        -------
+        float
+            Weak or strict counterfactual sentiment score for provided lists of texts.
         """
         group_dists = []
 

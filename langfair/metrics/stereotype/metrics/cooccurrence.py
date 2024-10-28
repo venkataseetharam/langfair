@@ -124,8 +124,9 @@ class CooccurrenceBiasMetric:
             metric will be calculated.
 
         Returns
-        ----------
-        Co-occurrence bias score metric
+        -------
+        float
+            Co-occurrence bias score metric
         """
         # Conduct intermediate operations before COBS calculations
         tot_co_counts, tot_cooccur, reference_words, all_words, attribute_word_lists = (

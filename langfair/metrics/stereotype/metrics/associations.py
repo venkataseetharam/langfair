@@ -136,8 +136,9 @@ class StereotypicalAssociations:
             metric will be calculated.
 
         Returns
-        ----------
-        Stereotypical associations score (float)
+        -------
+        float
+            Stereotypical associations score
         """
         # Count the number of times each target_word and group co-occur
         pair_to_count: Dict[Tuple[str, str], int] = defaultdict(int)
