@@ -3,11 +3,11 @@
 </p>
 
 # LangFair: Use-Case Level LLM Bias and Fairness Assessments
-
-[![Build Status](https://github.com/cvs-health/langfair/actions/workflows/ci.yml/badge.svg)](https://github.com/cvs-health/langfair/actions)
-[![codecov](https://codecov.io/gh/cvs-health/langfair/branch/main/graph/badge.svg)](https://codecov.io/gh/cvs-health/langfair)
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
+[![Build Status](https://github.com/cvs-health/langfair/actions/workflows/ci.yaml/badge.svg)](https://github.com/cvs-health/langfair/actions)
+[![Documentation](https://readthedocs.org/projects/aif360/badge/?version=latest)](https://aif360.readthedocs.io/en/latest/?badge=latest)
 ![PyPI version](https://badge.fury.io/py/langfair.svg)
+[![](https://img.shields.io/badge/cs.CL-arXiv.org/abs/2407.10853-B31B1B.svg)](https://arxiv.org/abs/2407.10853)
+
 
 LangFair is a powerful Python library designed for conducting bias and fairness assessments of large language model (LLM) use cases. This repository includes a comprehensive framework for [choosing bias and fairness metrics](https://github.com/cvs-health/langfair/tree/main#choosing-bias-and-fairness-metrics-for-an-llm-use-case), along with [demo notebooks](https://github.com/cvs-health/langfair/tree/main/examples) and a [technical playbook](https://arxiv.org/abs/2407.10853) that discusses LLM bias and fairness risks, evaluation metrics, and best practices. 
 
