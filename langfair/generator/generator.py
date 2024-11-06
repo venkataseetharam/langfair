@@ -281,9 +281,11 @@ class ResponseGenerator:
             prompt for prompt, i in itertools.product(prompts, range(self.count))
         ]
         # Use `n` parameter if instance of AzureChatOpenAI
+        is_azure_openai = False
         try:
             import langchain_openai
-            if isinstance(self.llm, langchain_openai.chat_models.azure.AzureChatOpenAI):
+            is_azure_openai = isinstance(self.llm, langchain_openai.chat_models.azure.AzureChatOpenAI)
+            if is_azure_openai:
                 tasks = [
                     self._async_api_call(
                         chain=chain,
@@ -293,17 +295,19 @@ class ResponseGenerator:
                     for prompt in prompts
                 ]
                 return tasks, duplicated_prompts
-        except:
+        
+        except ImportError:
             pass
         
         # Do not use `n` parameter otherwise
-        tasks = [
-            self._async_api_call(
-                chain=chain, prompt=prompt, count=1, system_text=system_prompt
-            )
-            for prompt in duplicated_prompts
-        ]
-        return tasks, duplicated_prompts
+        if not is_azure_openai:
+            tasks = [
+                self._async_api_call(
+                    chain=chain, prompt=prompt, count=1
+                )
+                for prompt in duplicated_prompts
+            ]
+            return tasks, duplicated_prompts
 
     def _update_count(self, count: int) -> None:
         """Updates self.count parameter and self.llm as necessary"""
@@ -361,7 +365,10 @@ class ResponseGenerator:
             result = await chain.agenerate(
                 [{"text": prompt, "system_text": system_text}]
             )
-            return [result.generations[0][i].text for i in range(count)]    
+            if len(result.generations) > 0 and len(result.generations[0]) >= count:
+                return [result.generations[0][i].text for i in range(count)]
+            else:
+                return [FAILURE_MESSAGE] * count  
         except self.suppressed_exceptions:
             return [FAILURE_MESSAGE] * count
         except Exception:
