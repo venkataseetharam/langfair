@@ -57,6 +57,7 @@ class CounterfactualGenerator(ResponseGenerator):
         self,
         langchain_llm: Any = None,
         max_calls_per_min: Optional[int] = None,
+        suppressed_exceptions: Optional[Tuple] = None
     ) -> None:
         """
         Class for parsing and replacing protected attribute words.
@@ -72,8 +73,12 @@ class CounterfactualGenerator(ResponseGenerator):
         max_calls_per_min : int, default=None
             Specifies how many api calls to make per minute to avoid a rate limit error. By default, no
             limit is specified.
+            
+        suppressed_exceptions : tuple, default=None
+            Specifies which exceptions to handle as 'Unable to get response' rather than raising the 
+            exception
         """
-        super().__init__(langchain_llm, max_calls_per_min)
+        super().__init__(langchain_llm, max_calls_per_min, suppressed_exceptions)
         # Create class attributes
 
         self.attribute_to_word_lists = {
