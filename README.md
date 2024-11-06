@@ -6,7 +6,8 @@
 [![Build Status](https://github.com/cvs-health/langfair/actions/workflows/ci.yaml/badge.svg)](https://github.com/cvs-health/langfair/actions)
 [![Documentation Status](https://img.shields.io/badge/docs-latest-blue.svg)](https://cvs-health.github.io/langfair/latest/index.html)
 [![PyPI version](https://badge.fury.io/py/langfair.svg)](https://pypi.org/project/langfair/)
-[![](https://img.shields.io/badge/cs.CL-arXiv:2407.10853-B31B1B.svg)](https://arxiv.org/abs/2407.10853)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![](https://img.shields.io/badge/arXiv-2407.10853-B31B1B.svg)](https://arxiv.org/abs/2407.10853)
 
 
 LangFair is a comprehensive Python library designed for conducting bias and fairness assessments of large language model (LLM) use cases. This repository includes a comprehensive framework for [choosing bias and fairness metrics](https://github.com/cvs-health/langfair/tree/main#choosing-bias-and-fairness-metrics-for-an-llm-use-case), along with [demo notebooks](https://github.com/cvs-health/langfair/tree/main/examples) and a [technical playbook](https://arxiv.org/abs/2407.10853) that discusses LLM bias and fairness risks, evaluation metrics, and best practices. 
@@ -95,7 +96,7 @@ results = await auto_object.evaluate()
 ```
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/cvs-health/langfair/develop/assets/images/autoeval_process.png" />
+  <img src="https://raw.githubusercontent.com/cvs-health/langfair/main/assets/images/autoeval_process.png" />
 </p>
 
 
