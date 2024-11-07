@@ -290,14 +290,14 @@ class ResponseGenerator:
             # Do not use `n` parameter otherwise
             pass
                 
-        prompts_for_task = prompts if is_azure_openai else duplicated_prompts 
+        task_prompts, task_count = (prompts, self.count) if is_azure_openai else (duplicated_prompts, 1)
         tasks = [
             self._async_api_call(
                 chain=chain,
                 prompt=prompt,
-                count=self.count,
+                count=task_count,
             )
-            for prompt in prompts_for_task
+            for prompt in task_prompts
         ]
         return tasks, duplicated_prompts
 
