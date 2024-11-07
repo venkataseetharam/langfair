@@ -14,7 +14,6 @@
 
 import numpy as np
 from numpy.typing import ArrayLike
-from sklearn.metrics import confusion_matrix
 
 from langfair.metrics.classification.metrics.baseclass.metrics import Metric
 
@@ -71,27 +70,22 @@ class FalseDiscoveryRateParity(Metric):
             len(unique_groups) == 2
         ), "langfair: groups must contain exactly two unique values"
 
-        cm1 = confusion_matrix(
+        cm1 = self.binary_confusion_matrix(
             y_true[groups == unique_groups[0]], y_pred[groups == unique_groups[0]]
-        )
-        print("-------------")
-        print(self.name)
-        print("Sklearn Confusion matrix, CM1: ", cm1)
-        print("Binary Confusion matrix: ", self.binary_confusion_matrix(y_true[groups == unique_groups[0]], y_pred[groups == unique_groups[0]]))
+            )
 
-        cm2 = confusion_matrix(
+        cm2 = self.binary_confusion_matrix(
             y_true[groups == unique_groups[1]], y_pred[groups == unique_groups[1]]
-        )
-        print("Sklearn Confusion matrix, CM2: ", cm2)
-        print("Binary Confusion matrix: ", self.binary_confusion_matrix(y_true[groups == unique_groups[1]], y_pred[groups == unique_groups[1]]))
+            )
+        
         fdr1 = (
-            cm1[0, 1] / (cm1[0, 1] + cm1[1, 1])
-            if (cm1[0, 1] + cm1[1, 1]) != 0
+            cm1[0][1] / (cm1[0][1] + cm1[1][1])
+            if (cm1[0][1] + cm1[1][1]) != 0
             else None
         )
         fdr2 = (
-            cm2[0, 1] / (cm2[0, 1] + cm2[1, 1])
-            if (cm2[0, 1] + cm2[1, 1]) != 0
+            cm2[0][1] / (cm2[0][1] + cm2[1][1])
+            if (cm2[0][1] + cm2[1][1]) != 0
             else None
         )
 
