@@ -19,41 +19,6 @@ Static benchmark assessments, which are typically assumed to be sufficiently rep
  
 LangFair addresses this gap by adopting a Bring Your Own Prompts (BYOP) approach, allowing users to tailor bias and fairness evaluations to their specific use cases. This ensures that the metrics computed reflect the true performance of the LLMs in real-world scenarios, where prompt-specific risks are critical. Additionally, LangFair's focus is on output-based metrics that are practical for governance audits and real-world testing, without needing access to internal model states.
 
-## 📊 Supported Bias and Fairness Metrics
-Bias and fairness metrics offered by LangFair are grouped into several categories. The full suite of metrics is displayed below.
-
-##### Toxicity Metrics
-* Expected Maximum Toxicity ([Gehman et al., 2020](https://arxiv.org/abs/2009.11462))
-* Toxicity Probability ([Gehman et al., 2020](https://arxiv.org/abs/2009.11462))
-* Toxic Fraction ([Liang et al., 2023](https://arxiv.org/abs/2211.09110))
-
-##### Counterfactual Fairness Metrics
-* Strict Counterfactual Sentiment Parity ([Huang et al., 2020](https://arxiv.org/abs/1911.03064))
-* Weak Counterfactual Sentiment Parity ([Bouchard, 2024](https://arxiv.org/abs/2407.10853))
-* Counterfactual Cosine Similarity Score ([Bouchard, 2024](https://arxiv.org/abs/2407.10853))
-* Counterfactual BLEU ([Bouchard, 2024](https://arxiv.org/abs/2407.10853))
-* Counterfactual ROUGE-L ([Bouchard, 2024](https://arxiv.org/abs/2407.10853))
-
-##### Stereotype Metrics
-* Stereotypical Associations ([Liang et al., 2023](https://arxiv.org/abs/2211.09110))
-* Co-occurrence Bias Score ([Bordia & Bowman, 2019](https://arxiv.org/abs/1904.03035))
-* Stereotype classifier metrics ([Zekun et al., 2023](https://arxiv.org/abs/2311.14126), [Bouchard, 2024](https://arxiv.org/abs/2407.10853))
-
-##### Recommendation (Counterfactual) Fairness Metrics
-* Jaccard Similarity ([Zhang et al., 2023](https://dl.acm.org/doi/10.1145/3604915.3608860))
-* Search Result Page Misinformation Score ([Zhang et al., 2023](https://dl.acm.org/doi/10.1145/3604915.3608860))
-* Pairwise Ranking Accuracy Gap ([Zhang et al., 2023](https://dl.acm.org/doi/10.1145/3604915.3608860))
-
-##### Classification Fairness Metrics
-* Predicted Prevalence Rate Disparity ([Feldman et al., 2015](https://arxiv.org/abs/1412.3756); [Bellamy et al., 2018](https://arxiv.org/abs/1810.01943); [Saleiro et al., 2019](https://arxiv.org/abs/1811.05577))
-* False Negative Rate Disparity ([Bellamy et al., 2018](https://arxiv.org/abs/1810.01943); [Saleiro et al., 2019](https://arxiv.org/abs/1811.05577))
-* False Omission Rate Disparity ([Bellamy et al., 2018](https://arxiv.org/abs/1810.01943); [Saleiro et al., 2019](https://arxiv.org/abs/1811.05577))
-* False Positive Rate Disparity ([Bellamy et al., 2018](https://arxiv.org/abs/1810.01943); [Saleiro et al., 2019](https://arxiv.org/abs/1811.05577))
-* False Discovery Rate Disparity ([Bellamy et al., 2018](https://arxiv.org/abs/1810.01943); [Saleiro et al., 2019](https://arxiv.org/abs/1811.05577))
-
-
-
-
 ## ⚡ Quickstart Guide
 ### (Optional) Create a virtual environment for using LangFair
 We recommend creating a new virtual environment using venv before installing LangFair. To do so, please follow instructions [here](https://docs.python.org/3/library/venv.html).
@@ -131,6 +96,38 @@ Our decision framework for selecting appropriate evaluation metrics is illustrat
 </p>
 
 **Note:** Fairness through unawareness means none of the prompts for an LLM use case include any mention of protected attribute words.
+
+## 📊 Supported Bias and Fairness Metrics
+Bias and fairness metrics offered by LangFair are grouped into several categories. The full suite of metrics is displayed below.
+
+##### Toxicity Metrics
+* Expected Maximum Toxicity ([Gehman et al., 2020](https://arxiv.org/abs/2009.11462))
+* Toxicity Probability ([Gehman et al., 2020](https://arxiv.org/abs/2009.11462))
+* Toxic Fraction ([Liang et al., 2023](https://arxiv.org/abs/2211.09110))
+
+##### Counterfactual Fairness Metrics
+* Strict Counterfactual Sentiment Parity ([Huang et al., 2020](https://arxiv.org/abs/1911.03064))
+* Weak Counterfactual Sentiment Parity ([Bouchard, 2024](https://arxiv.org/abs/2407.10853))
+* Counterfactual Cosine Similarity Score ([Bouchard, 2024](https://arxiv.org/abs/2407.10853))
+* Counterfactual BLEU ([Bouchard, 2024](https://arxiv.org/abs/2407.10853))
+* Counterfactual ROUGE-L ([Bouchard, 2024](https://arxiv.org/abs/2407.10853))
+
+##### Stereotype Metrics
+* Stereotypical Associations ([Liang et al., 2023](https://arxiv.org/abs/2211.09110))
+* Co-occurrence Bias Score ([Bordia & Bowman, 2019](https://arxiv.org/abs/1904.03035))
+* Stereotype classifier metrics ([Zekun et al., 2023](https://arxiv.org/abs/2311.14126), [Bouchard, 2024](https://arxiv.org/abs/2407.10853))
+
+##### Recommendation (Counterfactual) Fairness Metrics
+* Jaccard Similarity ([Zhang et al., 2023](https://dl.acm.org/doi/10.1145/3604915.3608860))
+* Search Result Page Misinformation Score ([Zhang et al., 2023](https://dl.acm.org/doi/10.1145/3604915.3608860))
+* Pairwise Ranking Accuracy Gap ([Zhang et al., 2023](https://dl.acm.org/doi/10.1145/3604915.3608860))
+
+##### Classification Fairness Metrics
+* Predicted Prevalence Rate Disparity ([Feldman et al., 2015](https://arxiv.org/abs/1412.3756); [Bellamy et al., 2018](https://arxiv.org/abs/1810.01943); [Saleiro et al., 2019](https://arxiv.org/abs/1811.05577))
+* False Negative Rate Disparity ([Bellamy et al., 2018](https://arxiv.org/abs/1810.01943); [Saleiro et al., 2019](https://arxiv.org/abs/1811.05577))
+* False Omission Rate Disparity ([Bellamy et al., 2018](https://arxiv.org/abs/1810.01943); [Saleiro et al., 2019](https://arxiv.org/abs/1811.05577))
+* False Positive Rate Disparity ([Bellamy et al., 2018](https://arxiv.org/abs/1810.01943); [Saleiro et al., 2019](https://arxiv.org/abs/1811.05577))
+* False Discovery Rate Disparity ([Bellamy et al., 2018](https://arxiv.org/abs/1810.01943); [Saleiro et al., 2019](https://arxiv.org/abs/1811.05577))
 
 
 ## 📖 Associated Research
