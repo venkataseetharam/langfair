@@ -35,7 +35,6 @@ detoxify = "^0.5.2"
 langchain = "^0.1.13"
 asyncio = "^3.4.3"
 sentence-transformers = "^2.7.0"
-scikit-learn = "^1.4.2"
 typing = "<3.10"
 tiktoken = "^0.6.0"
 

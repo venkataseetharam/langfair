@@ -14,7 +14,6 @@
 
 import numpy as np
 from numpy.typing import ArrayLike
-from sklearn.metrics import confusion_matrix
 
 from langfair.metrics.classification.metrics.baseclass.metrics import Metric
 
@@ -71,21 +70,22 @@ class FalseOmissionRateParity(Metric):
             len(unique_groups) == 2
         ), "langfair: groups must contain exactly two unique values"
 
-        cm1 = confusion_matrix(
+        cm1 = self.binary_confusion_matrix(
             y_true[groups == unique_groups[0]], y_pred[groups == unique_groups[0]]
-        )
-        cm2 = confusion_matrix(
-            y_true[groups == unique_groups[1]], y_pred[groups == unique_groups[1]]
-        )
+            )
 
+        cm2 = self.binary_confusion_matrix(
+            y_true[groups == unique_groups[1]], y_pred[groups == unique_groups[1]]
+            )
+        
         for1 = (
-            cm1[1, 0] / (cm1[1, 0] + cm1[0, 0])
-            if (cm1[1, 0] + cm1[0, 0]) != 0
+            cm1[1][0] / (cm1[1][0] + cm1[0][0])
+            if (cm1[1][0] + cm1[0][0]) != 0
             else None
         )
         for2 = (
-            cm2[1, 0] / (cm2[1, 0] + cm2[0, 0])
-            if (cm2[1, 0] + cm2[0, 0]) != 0
+            cm2[1][0] / (cm2[1][0] + cm2[0][0])
+            if (cm2[1][0] + cm2[0][0]) != 0
             else None
         )
 
