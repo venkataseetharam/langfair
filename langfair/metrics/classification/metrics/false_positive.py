@@ -74,10 +74,17 @@ class FalsePositiveRateParity(Metric):
         cm1 = confusion_matrix(
             y_true[groups == unique_groups[0]], y_pred[groups == unique_groups[0]]
         )
+        print("-------------")
+        print(self.name)
+        print("Sklearn Confusion matrix, CM1: ", cm1)
+        print("Binary Confusion matrix: ", self.binary_confusion_matrix(y_true[groups == unique_groups[0]], y_pred[groups == unique_groups[0]]))
+
         cm2 = confusion_matrix(
             y_true[groups == unique_groups[1]], y_pred[groups == unique_groups[1]]
         )
-
+        print("Sklearn Confusion matrix, CM2: ", cm2)
+        print("Binary Confusion matrix: ", self.binary_confusion_matrix(y_true[groups == unique_groups[1]], y_pred[groups == unique_groups[1]]))
+        
         fpr1 = (
             cm1[0, 1] / (cm1[0, 1] + cm1[0, 0])
             if (cm1[0, 1] + cm1[0, 0]) != 0
