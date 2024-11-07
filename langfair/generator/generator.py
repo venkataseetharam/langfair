@@ -280,34 +280,27 @@ class ResponseGenerator:
         duplicated_prompts = [
             prompt for prompt, i in itertools.product(prompts, range(self.count))
         ]
-        # Use `n` parameter if instance of AzureChatOpenAI
+        
         is_azure_openai = False
         try:
+            # Use `n` parameter if instance of AzureChatOpenAI
             import langchain_openai
             is_azure_openai = isinstance(self.llm, langchain_openai.chat_models.azure.AzureChatOpenAI)
-            if is_azure_openai:
-                tasks = [
-                    self._async_api_call(
-                        chain=chain,
-                        prompt=prompt,
-                        count=self.count,
-                    )
-                    for prompt in prompts
-                ]
-                return tasks, duplicated_prompts
-        
         except ImportError:
+            # Do not use `n` parameter otherwise
             pass
-        
-        # Do not use `n` parameter otherwise
-        if not is_azure_openai:
-            tasks = [
-                self._async_api_call(
-                    chain=chain, prompt=prompt, count=1
-                )
-                for prompt in duplicated_prompts
-            ]
-            return tasks, duplicated_prompts
+                
+        prompts_for_task = prompts if is_azure_openai else duplicated_prompts 
+        tasks = [
+            self._async_api_call(
+                chain=chain,
+                prompt=prompt,
+                count=self.count,
+            )
+            for prompt in prompts_for_task
+        ]
+        return tasks, duplicated_prompts
+
 
     def _update_count(self, count: int) -> None:
         """Updates self.count parameter and self.llm as necessary"""
