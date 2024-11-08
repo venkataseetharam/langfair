@@ -15,7 +15,6 @@
 from typing import Any, List, Optional
 
 import numpy as np
-import scipy.stats as stats
 
 from langfair.metrics.counterfactual.metrics.baseclass.metrics import Metric
 
@@ -111,6 +110,9 @@ class SentimentBias(Metric):
         float
             Weak or strict counterfactual sentiment score for provided lists of texts.
         """
+        assert len(texts1) == len(texts2), """
+        langfair: `texts1` and `texts2` must be of equal length
+        """
         group_dists = []
 
         for texts in [texts1, texts2]:
@@ -121,14 +123,22 @@ class SentimentBias(Metric):
             group_preds_2 = [(s > self.threshold) * 1 for s in group_dists[1]]
             parity_value = np.mean(group_preds_1) - np.mean(group_preds_2)
         elif self.parity == "strong":
-            parity_value = stats.wasserstein_distance(group_dists[0], group_dists[1])
+            parity_value = self._wasserstein_1_dist(group_dists[0], group_dists[1])
 
         return parity_value
 
     def _get_sentiment_scores(self, texts: List[str]) -> List[float]:
+        """Get sentiment scores"""
         if self.custom_classifier:
             return self.custom_classifier.predict(texts)
 
         elif self.classifier == "vader":
             scores = [self.classifier_instance.polarity_scores(text) for text in texts]
             return [score[self.sentiment] for score in scores]
+        
+    @staticmethod
+    def _wasserstein_1_dist(array1, array2):
+        """Compute Wasserstein-1 distance"""
+        a1_sorted = np.sort(np.array(array1))
+        a2_sorted = np.sort(np.array(array2))
+        return np.mean(np.abs(a1_sorted - a2_sorted))

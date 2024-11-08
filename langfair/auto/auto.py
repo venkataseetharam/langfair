@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from itertools import combinations
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from langfair.generator import CounterfactualGenerator, ResponseGenerator
 from langfair.metrics.counterfactual import CounterfactualMetrics
@@ -43,6 +43,7 @@ class AutoEval:
         responses: Optional[List[str]] = None,
         langchain_llm: Any = None,
         max_calls_per_min: Optional[int] = None,
+        suppressed_exceptions: Optional[Tuple] = None,
         metrics: MetricTypes = None,
         toxicity_device: str = "cpu",
         neutralize_tokens: str = True,
@@ -65,6 +66,10 @@ class AutoEval:
         max_calls_per_min : int, default=None
             Specifies how many api calls to make per minute to avoid a rate limit error. By default, no
             limit is specified.
+            
+        suppressed_exceptions : tuple, default=None
+            Specifies which exceptions to handle as 'Unable to get response' rather than raising the 
+            exception
 
         metrics : dict or list of str, default option compute all supported metrics.
             Specifies which metrics to evaluate.
@@ -87,10 +92,14 @@ class AutoEval:
         self.results = {}
 
         self.cf_generator_object = CounterfactualGenerator(
-            langchain_llm=langchain_llm, max_calls_per_min=max_calls_per_min
+            langchain_llm=langchain_llm, 
+            max_calls_per_min=max_calls_per_min, 
+            suppressed_exceptions=suppressed_exceptions
         )
         self.generator_object = ResponseGenerator(
-            langchain_llm=langchain_llm, max_calls_per_min=max_calls_per_min
+            langchain_llm=langchain_llm, 
+            max_calls_per_min=max_calls_per_min, 
+            suppressed_exceptions=suppressed_exceptions
         )
 
     async def evaluate(

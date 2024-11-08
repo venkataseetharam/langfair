@@ -36,3 +36,19 @@ class Metric(ABC):
         Abstract method that needs to be implemented by the user when creating a new metric function.
         """
         pass
+
+    @staticmethod
+    def binary_confusion_matrix(y_true, y_pred):
+        cm = [[0, 0], [0, 0]]
+        for i in range(len(y_pred)):
+            if y_pred[i] == y_true[i]:
+                if y_pred[i] == 0:
+                    cm[0][0] += 1
+                else:
+                    cm[1][1] += 1
+            else:
+                if y_pred[i] == 0:
+                    cm[1][0] += 1
+                else:
+                    cm[0][1] += 1
+        return cm
