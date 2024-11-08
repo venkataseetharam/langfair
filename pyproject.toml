@@ -9,7 +9,7 @@ maintainers = ["Dylan Bouchard <dylan.bouchard@cvshealth.com>",
                "Mohit Singh Chauhan <mohitsingh.chauhan@cvshealth.com>",
                "David Skarbrevik <david.skarbrevik@cvshealth.com>",
                "Viren Bajaj <bajajv@aetna.com>",
-               "Zeya Ahmed <zeya.ahmad@cvshealth.com>"]
+               "Zeya Ahmad <zeya.ahmad@cvshealth.com>"]
 repository = "https://github.com/cvs-health/langfair"
 homepage = "https://github.com/cvs-health/langfair"
 documentation = "https://cvs-health.github.io/langfair/latest/index.html"
