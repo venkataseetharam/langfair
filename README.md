@@ -78,12 +78,12 @@ auto_object.print_results()
 ## 📚 Example Notebooks
 Explore the following demo notebooks to see how to use LangFair for various bias and fairness evaluation metrics:
 
-- [Toxicity Evaluation](https://github.com/cvs-health/langfair/blob/main/examples/text_generation/toxicity_metrics_demo.ipynb): A notebook demonstrating toxicity metrics.
-- [Counterfactual Fairness Evaluation](https://github.com/cvs-health/langfair/blob/main/examples/text_generation/counterfactual_metrics_demo.ipynb): A notebook illustrating how to generate counterfactual datasets and compute counterfactual fairness metrics.
-- [Stereotype Evaluation](https://github.com/cvs-health/langfair/blob/main/examples/text_generation/stereotype_metrics_analysis.ipynb): A notebook demonstrating stereotype metrics.
-- [AutoEval for Text Generation / Summarization (Toxicity, Stereotypes, Counterfactual)](https://github.com/cvs-health/langfair/blob/main/examples/text_generation/auto_eval_demo.ipynb): A notebook illustrating how to use LangFair's `AutoEval` class for a comprehensive fairness assessment of text generation / summarization use cases. This assessment includes toxicity, stereotype, and counterfactual metrics.
-- [Classification Fairness Evaluation](https://github.com/cvs-health/langfair/blob/main/examples/classification/classification_metrics_demo.ipynb): A notebook demonstrating classification fairness metrics.
-- [Recommendation Fairness Evaluation](https://github.com/cvs-health/langfair/blob/main/examples/recommendation/recommendation_metrics_demo.ipynb): A notebook demonstrating recommendation fairness metrics.
+- [Toxicity Evaluation](https://github.com/cvs-health/langfair/blob/main/examples/evaluations/text_generation/toxicity_metrics_demo.ipynb): A notebook demonstrating toxicity metrics.
+- [Counterfactual Fairness Evaluation](https://github.com/cvs-health/langfair/blob/main/examples/evaluations/text_generation/counterfactual_metrics_demo.ipynb): A notebook illustrating how to generate counterfactual datasets and compute counterfactual fairness metrics.
+- [Stereotype Evaluation](https://github.com/cvs-health/langfair/blob/main/examples/evaluations/text_generation/stereotype_metrics_demo.ipynb): A notebook demonstrating stereotype metrics.
+- [AutoEval for Text Generation / Summarization (Toxicity, Stereotypes, Counterfactual)](https://github.com/cvs-health/langfair/blob/main/examples/evaluations/text_generation/auto_eval_demo.ipynb): A notebook illustrating how to use LangFair's `AutoEval` class for a comprehensive fairness assessment of text generation / summarization use cases. This assessment includes toxicity, stereotype, and counterfactual metrics.
+- [Classification Fairness Evaluation](https://github.com/cvs-health/langfair/blob/main/examples/evaluations/classification/classification_metrics_demo.ipynb): A notebook demonstrating classification fairness metrics.
+- [Recommendation Fairness Evaluation](https://github.com/cvs-health/langfair/blob/main/examples/evaluations/recommendation/recommendation_metrics_demo.ipynb): A notebook demonstrating recommendation fairness metrics.
 
 
 ## 🛠 Choosing Bias and Fairness Metrics for an LLM Use Case
