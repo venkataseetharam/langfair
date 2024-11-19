@@ -15,29 +15,24 @@ import time
 import warnings
 from typing import Any, Dict, List, Optional, Tuple
 
-import langchain_core
 import numpy as np
 import tiktoken
-from langchain.chains import LLMChain
-from langchain.prompts.chat import (
-    ChatPromptTemplate,
-    HumanMessagePromptTemplate,
-    SystemMessagePromptTemplate,
-)
+import langchain_core
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
 
 from langfair.constants.cost_data import COST_MAPPING
 
 FAILURE_MESSAGE = "Unable to get response"
 TOKEN_COST_DATE = "10/21/2024"
-warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
 class ResponseGenerator:
     def __init__(
         self,
         langchain_llm: Any = None,
+        suppressed_exceptions: Optional[Tuple] = None,
         max_calls_per_min: Optional[int] = None,
-        suppressed_exceptions: Optional[Tuple] = None
     ) -> None:
         """
         Class for generating data from a provided set of prompts
@@ -48,19 +43,12 @@ class ResponseGenerator:
             A langchain llm object to get passed to chain constructor. User is responsible for specifying
             temperature and other relevant parameters to the constructor of their `langchain_llm` object.
 
-        max_calls_per_min : int, default=None
-            Specifies how many api calls to make per minute to avoid a rate limit error. By default, no
-            limit is specified.
-            
         suppressed_exceptions : tuple, default=None
             Specifies which exceptions to handle as 'Unable to get response' rather than raising the 
             exception
-
-        Attributes
-        ----------
-        cost_mapping : dict
-            A dictionary containing the cost information for different models. The keys are the model names, and the values are
-            dictionaries specifying the input and output costs per token.
+            
+        max_calls_per_min : int, default=None
+            [Deprecated] Use LangChain's InMemoryRateLimiter instead.
         """
         self.llm = langchain_llm
         self.max_calls_per_min = max_calls_per_min
@@ -68,7 +56,12 @@ class ResponseGenerator:
         self.cost_mapping = COST_MAPPING
         self.failure_message = FAILURE_MESSAGE
         self.token_cost_date = TOKEN_COST_DATE
-
+        if self.max_calls_per_min:
+            warnings.warn(
+                "max_calls_per_min is deprecated and will not be used. Use LangChain's `InMemoryRateLimiter` instead", 
+                DeprecationWarning
+            )
+        
     async def estimate_token_cost(
         self,
         tiktoken_model_name: str,
@@ -229,17 +222,14 @@ class ResponseGenerator:
             assert (
                 count == 1
             ), "langfair: temperature must be greater than 0 if count > 1"
-        self._update_count(count)
+        self.count = count
 
         # set up langchain and generate asynchronously
-        chain = self._setup_langchain(system_message=system_prompt)
-        generations, duplicated_prompts = await self._generate_in_batches(
+        chain = self._setup_langchain(system_prompt=system_prompt)
+        tasks, duplicated_prompts = self._create_tasks(
             chain=chain, prompts=prompts
         )
-        responses = []
-        for response in generations:
-            responses.extend(response)
-
+        responses = await asyncio.gather(*tasks)
         non_completion_rate = len([r for r in responses if r == FAILURE_MESSAGE]) / len(
             responses
         )
@@ -258,16 +248,17 @@ class ResponseGenerator:
             },
         }
 
-    def _setup_langchain(self, system_message: str = "{system_text}") -> Any:
-        """Sets up langchain `LLMChain` object"""
-        system_msg_prompt = SystemMessagePromptTemplate.from_template(system_message)
-        human_prompt = HumanMessagePromptTemplate.from_template("{text}")
-        messages = [system_msg_prompt, human_prompt]
-        chat_prompt = ChatPromptTemplate.from_messages(messages)
-        chain = LLMChain(llm=self.llm, prompt=chat_prompt)
-        return chain
+    def _setup_langchain(self, system_prompt: str) -> Any:
+        """Sets up langchain `RunnableSequence` object"""
+        chat_prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", system_prompt),
+                ("human", "{text}"),
+            ]
+        )
+        return chat_prompt | self.llm | StrOutputParser()
 
-    def _task_creator(
+    def _create_tasks(
         self,
         chain: Any,
         prompts: List[str],
@@ -279,98 +270,26 @@ class ResponseGenerator:
         duplicated_prompts = [
             prompt for prompt, i in itertools.product(prompts, range(self.count))
         ]
-        
-        is_azure_openai = False
-        try:
-            # Use `n` parameter if instance of AzureChatOpenAI
-            import langchain_openai
-            is_azure_openai = isinstance(self.llm, langchain_openai.chat_models.azure.AzureChatOpenAI)
-        except ImportError:
-            # Do not use `n` parameter otherwise
-            pass
-                
-        task_prompts, task_count = (prompts, self.count) if is_azure_openai else (duplicated_prompts, 1)
         tasks = [
             self._async_api_call(
                 chain=chain,
-                prompt=prompt,
-                count=task_count,
+                prompt=prompt
             )
-            for prompt in task_prompts
+            for prompt in duplicated_prompts
         ]
         return tasks, duplicated_prompts
 
-
-    def _update_count(self, count: int) -> None:
-        """Updates self.count parameter and self.llm as necessary"""
-        self.count = count
-        try:
-            import langchain_openai
-            self.llm.n = (
-                count
-                if isinstance(self.llm, langchain_openai.chat_models.azure.AzureChatOpenAI)
-                else 1
-            )
-        except:
-            self.llm.n = 1
-
-    async def _generate_in_batches(
-        self,
-        chain: Any,
-        prompts: List[str],
-    ) -> Tuple[List[str], List[str]]:
-        """Executes async IO with langchain in batches to avoid rate limit error"""
-        # define batch size and partition prompt list
-        batch_size = (
-            len(prompts)
-            if not self.max_calls_per_min
-            else self.max_calls_per_min // self.count
-        )
-        prompts_partition = self._split(prompts, batch_size)
-
-        # Execute async in batches
-        duplicated_prompts, responses = [], []
-        for prompt_batch in prompts_partition:
-            start = time.time()
-            # generate responses for current batch
-            tasks, duplicated_batch_prompts = self._task_creator(
-                chain, prompt_batch
-            )
-            responses_batch = await asyncio.gather(*tasks)
-
-            # extend lists to include current batch
-            duplicated_prompts.extend(duplicated_batch_prompts)
-            responses.extend(responses_batch)
-            stop = time.time()
-
-            # pause if needed
-            if (stop - start < 60) and (batch_size < len(prompts)):
-                time.sleep(61 - stop + start)
-
-        return responses, duplicated_prompts
-
     async def _async_api_call(
-        self, chain: Any, prompt: str, system_text: Optional[str] = None, count: int = 1
+        self, chain: Any, prompt: str
     ) -> List[Any]:
-        """Generates responses asynchronously using an LLMChain object"""
+        """Generates responses asynchronously using an RunnableSequence object"""
         try:
-            result = await chain.agenerate(
-                [{"text": prompt, "system_text": system_text}]
-            )
-            if len(result.generations) > 0 and len(result.generations[0]) >= count:
-                return [result.generations[0][i].text for i in range(count)]
-            else:
-                return [FAILURE_MESSAGE] * count  
+            result = await chain.ainvoke([prompt]) 
+            return result
         except self.suppressed_exceptions:
-            return [FAILURE_MESSAGE] * count
+            return FAILURE_MESSAGE
         except Exception:
             raise
-
-    @staticmethod
-    def _split(list_a: List[str], chunk_size: int) -> List[List[str]]:
-        """Partitions list"""
-        for i in range(0, len(list_a), chunk_size):
-            yield list_a[i : i + chunk_size]
 
     @staticmethod
     def _num_tokens_from_messages(

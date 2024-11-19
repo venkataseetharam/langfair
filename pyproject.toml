@@ -37,15 +37,14 @@ nltk = ">=3.8.2"
 sacremoses = "^0.1.1"
 rouge-score = "^0.1.2"
 detoxify = "^0.5.2"
-langchain = "^0.1.13"
+langchain = "^0.3.7"
 asyncio = "^3.4.3"
 sentence-transformers = "^2.7.0"
 typing = "<3.10"
-tiktoken = "^0.6.0"
+tiktoken = "^0.7.0"
 
 [tool.poetry.group.dev.dependencies]
-openai = ">=1.24.0,<2.0.0"
-langchain-openai = "^0.1.6"
+langchain-openai = "^0.2.9"
 pre-commit = "3.7.1"
 ruff = "^0.4.8"
 

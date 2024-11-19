@@ -42,11 +42,11 @@ class AutoEval:
         prompts: List[str],
         responses: Optional[List[str]] = None,
         langchain_llm: Any = None,
-        max_calls_per_min: Optional[int] = None,
         suppressed_exceptions: Optional[Tuple] = None,
         metrics: MetricTypes = None,
         toxicity_device: str = "cpu",
         neutralize_tokens: str = True,
+        max_calls_per_min: Optional[int] = None,
     ) -> None:
         """
         This class calculates all toxicity, stereotype, and counterfactual metrics support by langfair
@@ -62,10 +62,6 @@ class AutoEval:
         langchain_llm : langchain llm object, default=None
             A langchain llm object to get passed to chain constructor. User is responsible for specifying
             temperature and other relevant parameters to the constructor of their `langchain_llm` object.
-
-        max_calls_per_min : int, default=None
-            Specifies how many api calls to make per minute to avoid a rate limit error. By default, no
-            limit is specified.
             
         suppressed_exceptions : tuple, default=None
             Specifies which exceptions to handle as 'Unable to get response' rather than raising the 
@@ -81,6 +77,9 @@ class AutoEval:
         neutralize_tokens: boolean, default=True
             An indicator attribute to use masking for the computation of Blue and RougeL metrics. If True, counterfactual
             responses are masked using `CounterfactualGenerator.neutralize_tokens` method before computing the aforementioned metrics.
+            
+        max_calls_per_min : int, default=None
+            [Deprecated] Use LangChain's InMemoryRateLimiter instead.
         """
         self.prompts = self._validate_list_type(prompts)
         self.responses = self._validate_list_type(responses)
@@ -121,8 +120,8 @@ class AutoEval:
         if metrics is not None:
             self.metrics = self._validate_metrics(metrics)
 
-        print("\033[1mStep 1: Fairness Through Unawareness\033[0m")
-        print("------------------------------------")
+        print("\033[1mStep 1: Fairness Through Unawareness Check\033[0m")
+        print("------------------------------------------")
         # 1. Check for Fairness Through Unawareness FTU
         # Parse prompts for protected attribute words
         protected_words = {"race": 0, "gender": 0}
@@ -135,25 +134,13 @@ class AutoEval:
                 [1 if len(col_item) > 0 else 0 for col_item in col]
             )
             total_protected_words += protected_words[attribute]
-            print(
-                "langfair: Number of prompts containing {} words: {}".format(
-                    attribute, protected_words[attribute]
-                )
-            )
-            if protected_words[attribute] == 0:
-                print(
-                    "- langfair: The prompts satisfy fairness through unawareness for {} words, the recommended risk assessment only include Toxicity".format(
-                        attribute
-                    )
-                )
-            else:
-                print(
-                    "- langfair: The prompts do not satisfy fairness through unawareness for {} words, the recommended risk assessments include Toxicity, Stereotype, and Counterfactual Discrimination.".format(
-                        attribute
-                    )
-                )
+            yes_no = "do not " if protected_words[attribute] > 0 else " "
+            ftu_text = f"""langfair: The prompts {yes_no}satisfy fairness through unawareness for {attribute}. """  
+            word_count_text = f"""Number of prompts containing {attribute} words: {protected_words[attribute]}"""
+            print(ftu_text + word_count_text)
 
         if total_protected_words > 0:
+            print("langfair: Toxicity, stereotype, and counterfactual fairness assessments will be conducted.")
             print("\n\033[1mStep 2: Generate Counterfactual Dataset\033[0m")
             print("---------------------------------------")
         # 2. Generate CF responses for race (if race FTU not satisfied) and gender (if gender FTU not satisfied)
@@ -177,6 +164,7 @@ class AutoEval:
                         "metadata"
                     ]
         else:
+            print("langfair: Toxicity and stereotype assessments will be conducted.")
             print("\n\033[1m(Skipping) Step 2: Generate Counterfactual Dataset\033[0m")
             print("--------------------------------------------------")
 
