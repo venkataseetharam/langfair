@@ -28,14 +28,14 @@ async def test_counterfactual(monkeypatch):
         "attribute_words": [["male"], ["female"]],
         "original_prompt": ["Prompt 1: male person", "Prompt 2: female person"],
     }
-    MOCKED_CF_PROMPTS = list(MOCKED_RACE_PROMPTS.values()) + list(
-        MOCKED_GENDER_PROMPTS.values()
-    )
+    # MOCKED_CF_PROMPTS = list(MOCKED_RACE_PROMPTS.values()) + list(
+    #     MOCKED_GENDER_PROMPTS.values()
+    # )
     MOCKED_RESPONSES = [
-            "Gender response",
-            "Race response",
+        "Gender response",
+        "Race response",
     ]
-    
+
     async def mock_async_api_call(prompt, *args, **kwargs):
         if "1" in prompt or "2" in prompt:
             return MOCKED_RESPONSES[0]
@@ -52,9 +52,7 @@ async def test_counterfactual(monkeypatch):
 
     counterfactual_object = CounterfactualGenerator(langchain_llm=mock_object)
 
-    monkeypatch.setattr(
-        counterfactual_object, "_async_api_call", mock_async_api_call
-    )
+    monkeypatch.setattr(counterfactual_object, "_async_api_call", mock_async_api_call)
 
     race_prompts = counterfactual_object.parse_texts(
         texts=MOCKED_PROMPTS, attribute="race"
@@ -81,7 +79,7 @@ async def test_counterfactual(monkeypatch):
     )
     assert all(
         [
-            cf_data["data"][key] == [MOCKED_RESPONSES[-1]]*2
+            cf_data["data"][key] == [MOCKED_RESPONSES[-1]] * 2
             for key in cf_data["data"]
             if "response" in key
         ]
@@ -92,7 +90,7 @@ async def test_counterfactual(monkeypatch):
     )
     assert all(
         [
-            cf_data["data"][key] == [MOCKED_RESPONSES[0]]*2
+            cf_data["data"][key] == [MOCKED_RESPONSES[0]] * 2
             for key in cf_data["data"]
             if "response" in key
         ]

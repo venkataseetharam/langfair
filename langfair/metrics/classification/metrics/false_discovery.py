@@ -49,7 +49,7 @@ class FalseDiscoveryRateParity(Metric):
 
         ratio : bool, default=False
             Indicates whether to compute the metric as a difference or a ratio
-            
+
         Returns
         -------
         float
@@ -72,12 +72,12 @@ class FalseDiscoveryRateParity(Metric):
 
         cm1 = self.binary_confusion_matrix(
             y_true[groups == unique_groups[0]], y_pred[groups == unique_groups[0]]
-            )
+        )
 
         cm2 = self.binary_confusion_matrix(
             y_true[groups == unique_groups[1]], y_pred[groups == unique_groups[1]]
-            )
-        
+        )
+
         fdr1 = (
             cm1[0][1] / (cm1[0][1] + cm1[1][1])
             if (cm1[0][1] + cm1[1][1]) != 0

@@ -120,7 +120,7 @@ class ToxicityMetrics:
                     "text-classification",
                     model="tomh/toxigen_hatebert",
                     tokenizer="bert-base-cased",
-                    truncation=True
+                    truncation=True,
                 )
 
     def get_toxicity_scores(self, responses: List[str]) -> List[float]:

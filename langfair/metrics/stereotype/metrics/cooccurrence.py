@@ -69,7 +69,7 @@ class CooccurrenceBiasMetric:
             co-occurrence bias score.
 
         how : str, default='mean'
-            If defined as 'mean', evaluate method returns average COBS score. If 'word_level', the 
+            If defined as 'mean', evaluate method returns average COBS score. If 'word_level', the
             method returns dictinary with COBS(w) for each word 'w'.
         """
         # Specify whether target words should be adjectives or professions

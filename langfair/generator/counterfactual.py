@@ -8,12 +8,11 @@
 # by CVS Health to include functionality for computing
 # prompt and response token counts for OpenAI models.
 
+import asyncio
 import itertools
-import time
 import warnings
 from typing import Any, Dict, List, Optional, Tuple
 
-import asyncio
 import nltk
 import sacremoses
 from nltk.tokenize import word_tokenize
@@ -70,18 +69,18 @@ class CounterfactualGenerator(ResponseGenerator):
         langchain_llm : langchain llm object, default=None
             A langchain llm object to get passed to chain constructor. User is responsible for specifying
             temperature and other relevant parameters to the constructor of their `langchain_llm` object.
-            
+
         suppressed_exceptions : tuple, default=None
-            Specifies which exceptions to handle as 'Unable to get response' rather than raising the 
+            Specifies which exceptions to handle as 'Unable to get response' rather than raising the
             exception
-            
+
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
         """
         super().__init__(
-            langchain_llm=langchain_llm, 
-            suppressed_exceptions=suppressed_exceptions, 
-            max_calls_per_min=max_calls_per_min
+            langchain_llm=langchain_llm,
+            suppressed_exceptions=suppressed_exceptions,
+            max_calls_per_min=max_calls_per_min,
         )
         # Create class attributes
 
@@ -380,16 +379,14 @@ class CounterfactualGenerator(ResponseGenerator):
         chain = self._setup_langchain(system_prompt=system_prompt)
         for group in groups:
             prompt_key = group + "_prompt"
-            start = time.time()
+            # start = time.time()
             # generate with async
             (
                 tasks,
                 duplicated_prompts_dict[prompt_key],
-            ) = self._create_tasks(
-                chain=chain, prompts=prompts_dict[prompt_key]
-            )
+            ) = self._create_tasks(chain=chain, prompts=prompts_dict[prompt_key])
             responses_dict[group + "_response"] = await asyncio.gather(*tasks)
-            stop = time.time()
+            # stop = time.time()
 
         non_completion_rate = len(
             [

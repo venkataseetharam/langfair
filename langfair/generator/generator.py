@@ -11,15 +11,14 @@
 import asyncio
 import itertools
 import random
-import time
 import warnings
 from typing import Any, Dict, List, Optional, Tuple
 
+import langchain_core
 import numpy as np
 import tiktoken
-import langchain_core
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 
 from langfair.constants.cost_data import COST_MAPPING
 
@@ -44,9 +43,9 @@ class ResponseGenerator:
             temperature and other relevant parameters to the constructor of their `langchain_llm` object.
 
         suppressed_exceptions : tuple, default=None
-            Specifies which exceptions to handle as 'Unable to get response' rather than raising the 
+            Specifies which exceptions to handle as 'Unable to get response' rather than raising the
             exception
-            
+
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
         """
@@ -58,10 +57,10 @@ class ResponseGenerator:
         self.token_cost_date = TOKEN_COST_DATE
         if self.max_calls_per_min:
             warnings.warn(
-                "max_calls_per_min is deprecated and will not be used. Use LangChain's `InMemoryRateLimiter` instead", 
-                DeprecationWarning
+                "max_calls_per_min is deprecated and will not be used. Use LangChain's `InMemoryRateLimiter` instead",
+                DeprecationWarning,
             )
-        
+
     async def estimate_token_cost(
         self,
         tiktoken_model_name: str,
@@ -226,9 +225,7 @@ class ResponseGenerator:
 
         # set up langchain and generate asynchronously
         chain = self._setup_langchain(system_prompt=system_prompt)
-        tasks, duplicated_prompts = self._create_tasks(
-            chain=chain, prompts=prompts
-        )
+        tasks, duplicated_prompts = self._create_tasks(chain=chain, prompts=prompts)
         responses = await asyncio.gather(*tasks)
         non_completion_rate = len([r for r in responses if r == FAILURE_MESSAGE]) / len(
             responses
@@ -271,20 +268,15 @@ class ResponseGenerator:
             prompt for prompt, i in itertools.product(prompts, range(self.count))
         ]
         tasks = [
-            self._async_api_call(
-                chain=chain,
-                prompt=prompt
-            )
+            self._async_api_call(chain=chain, prompt=prompt)
             for prompt in duplicated_prompts
         ]
         return tasks, duplicated_prompts
 
-    async def _async_api_call(
-        self, chain: Any, prompt: str
-    ) -> List[Any]:
+    async def _async_api_call(self, chain: Any, prompt: str) -> List[Any]:
         """Generates responses asynchronously using an RunnableSequence object"""
         try:
-            result = await chain.ainvoke([prompt]) 
+            result = await chain.ainvoke([prompt])
             return result
         except self.suppressed_exceptions:
             return FAILURE_MESSAGE
