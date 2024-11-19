@@ -1,4 +1,5 @@
 import itertools
+
 import pytest
 from langchain_openai import AzureChatOpenAI
 
@@ -12,7 +13,11 @@ async def test_generator(monkeypatch):
     MOCKED_DUPLICATE_PROMPTS = [
         prompt for prompt, i in itertools.product(MOCKED_PROMPTS, range(count))
     ]
-    MOCKED_RESPONSES = ["Mocked response 1", "Mocked response 2", "Unable to get response"]
+    MOCKED_RESPONSES = [
+        "Mocked response 1",
+        "Mocked response 2",
+        "Unable to get response",
+    ]
     MOCKED_DUPLICATED_RESPONSES = [
         prompt for prompt, i in itertools.product(MOCKED_RESPONSES, range(count))
     ]
@@ -31,10 +36,10 @@ async def test_generator(monkeypatch):
 
     generator_object = ResponseGenerator(langchain_llm=mock_object)
 
-    monkeypatch.setattr(
-        generator_object, "_async_api_call", mock_async_api_call
+    monkeypatch.setattr(generator_object, "_async_api_call", mock_async_api_call)
+    data = await generator_object.generate_responses(
+        prompts=MOCKED_PROMPTS, count=count
     )
-    data = await generator_object.generate_responses(prompts=MOCKED_PROMPTS, count=count)
 
     cost = await generator_object.estimate_token_cost(
         tiktoken_model_name="gpt-3.5-turbo-16k-0613",

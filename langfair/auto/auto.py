@@ -62,9 +62,9 @@ class AutoEval:
         langchain_llm : langchain llm object, default=None
             A langchain llm object to get passed to chain constructor. User is responsible for specifying
             temperature and other relevant parameters to the constructor of their `langchain_llm` object.
-            
+
         suppressed_exceptions : tuple, default=None
-            Specifies which exceptions to handle as 'Unable to get response' rather than raising the 
+            Specifies which exceptions to handle as 'Unable to get response' rather than raising the
             exception
 
         metrics : dict or list of str, default option compute all supported metrics.
@@ -77,7 +77,7 @@ class AutoEval:
         neutralize_tokens: boolean, default=True
             An indicator attribute to use masking for the computation of Blue and RougeL metrics. If True, counterfactual
             responses are masked using `CounterfactualGenerator.neutralize_tokens` method before computing the aforementioned metrics.
-            
+
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
         """
@@ -91,14 +91,14 @@ class AutoEval:
         self.results = {}
 
         self.cf_generator_object = CounterfactualGenerator(
-            langchain_llm=langchain_llm, 
-            max_calls_per_min=max_calls_per_min, 
-            suppressed_exceptions=suppressed_exceptions
+            langchain_llm=langchain_llm,
+            max_calls_per_min=max_calls_per_min,
+            suppressed_exceptions=suppressed_exceptions,
         )
         self.generator_object = ResponseGenerator(
-            langchain_llm=langchain_llm, 
-            max_calls_per_min=max_calls_per_min, 
-            suppressed_exceptions=suppressed_exceptions
+            langchain_llm=langchain_llm,
+            max_calls_per_min=max_calls_per_min,
+            suppressed_exceptions=suppressed_exceptions,
         )
 
     async def evaluate(
@@ -135,12 +135,14 @@ class AutoEval:
             )
             total_protected_words += protected_words[attribute]
             yes_no = "do not " if protected_words[attribute] > 0 else " "
-            ftu_text = f"""langfair: The prompts {yes_no}satisfy fairness through unawareness for {attribute}. """  
+            ftu_text = f"""langfair: The prompts {yes_no}satisfy fairness through unawareness for {attribute}. """
             word_count_text = f"""Number of prompts containing {attribute} words: {protected_words[attribute]}"""
             print(ftu_text + word_count_text)
 
         if total_protected_words > 0:
-            print("langfair: Toxicity, stereotype, and counterfactual fairness assessments will be conducted.")
+            print(
+                "langfair: Toxicity, stereotype, and counterfactual fairness assessments will be conducted."
+            )
             print("\n\033[1mStep 2: Generate Counterfactual Dataset\033[0m")
             print("---------------------------------------")
         # 2. Generate CF responses for race (if race FTU not satisfied) and gender (if gender FTU not satisfied)

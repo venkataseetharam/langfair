@@ -51,7 +51,7 @@ class PredictedPrevalenceRateParity(Metric):
 
         ratio : bool, default=False
             Indicates whether to compute the metric as a difference or a ratio
-            
+
         Returns
         -------
         float
