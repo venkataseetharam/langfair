@@ -31,8 +31,8 @@ class ResponseGenerator:
     def __init__(
         self,
         langchain_llm: Any = None,
+        suppressed_exceptions: Optional[Tuple] = None,
         max_calls_per_min: Optional[int] = None,
-        suppressed_exceptions: Optional[Tuple] = None
     ) -> None:
         """
         Class for generating data from a provided set of prompts
@@ -43,19 +43,12 @@ class ResponseGenerator:
             A langchain llm object to get passed to chain constructor. User is responsible for specifying
             temperature and other relevant parameters to the constructor of their `langchain_llm` object.
 
-        max_calls_per_min : int, default=None
-            [Deprecated] Specifies how many api calls to make per minute to avoid a rate limit error. By default, no
-            limit is specified.
-            
         suppressed_exceptions : tuple, default=None
             Specifies which exceptions to handle as 'Unable to get response' rather than raising the 
             exception
-
-        Attributes
-        ----------
-        cost_mapping : dict
-            A dictionary containing the cost information for different models. The keys are the model names, and the values are
-            dictionaries specifying the input and output costs per token.
+            
+        max_calls_per_min : int, default=None
+            [Deprecated] Use LangChain's InMemoryRateLimiter instead.
         """
         self.llm = langchain_llm
         self.max_calls_per_min = max_calls_per_min

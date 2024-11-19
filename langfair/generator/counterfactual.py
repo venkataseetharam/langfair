@@ -13,6 +13,7 @@ import time
 import warnings
 from typing import Any, Dict, List, Optional, Tuple
 
+import asyncio
 import nltk
 import sacremoses
 from nltk.tokenize import word_tokenize
@@ -56,8 +57,8 @@ class CounterfactualGenerator(ResponseGenerator):
     def __init__(
         self,
         langchain_llm: Any = None,
+        suppressed_exceptions: Optional[Tuple] = None,
         max_calls_per_min: Optional[int] = None,
-        suppressed_exceptions: Optional[Tuple] = None
     ) -> None:
         """
         Class for parsing and replacing protected attribute words.
@@ -69,16 +70,19 @@ class CounterfactualGenerator(ResponseGenerator):
         langchain_llm : langchain llm object, default=None
             A langchain llm object to get passed to chain constructor. User is responsible for specifying
             temperature and other relevant parameters to the constructor of their `langchain_llm` object.
-
-        max_calls_per_min : int, default=None
-            Specifies how many api calls to make per minute to avoid a rate limit error. By default, no
-            limit is specified.
             
         suppressed_exceptions : tuple, default=None
             Specifies which exceptions to handle as 'Unable to get response' rather than raising the 
             exception
+            
+        max_calls_per_min : int, default=None
+            [Deprecated] Use LangChain's InMemoryRateLimiter instead.
         """
-        super().__init__(langchain_llm, max_calls_per_min, suppressed_exceptions)
+        super().__init__(
+            langchain_llm=langchain_llm, 
+            suppressed_exceptions=suppressed_exceptions, 
+            max_calls_per_min=max_calls_per_min
+        )
         # Create class attributes
 
         self.attribute_to_word_lists = {
@@ -357,7 +361,7 @@ class CounterfactualGenerator(ResponseGenerator):
             assert (
                 count == 1
             ), "langfair: temperature must be greater than 0 if count > 1"
-        self._update_count(count)
+        self.count = count
 
         # create counterfactual prompts
         groups = self.group_mapping[attribute] if attribute else custom_dict.keys()
@@ -367,35 +371,25 @@ class CounterfactualGenerator(ResponseGenerator):
             custom_dict=custom_dict,
         )
 
-        print(f"""Generating {count} responses for each {
+        print(f"""langfair: Generating {count} responses for each {
             attribute if attribute else 'group-specific'
         } prompt...""")
 
         # generate responses with async
         responses_dict, duplicated_prompts_dict = {}, {}
-        chain = self._setup_langchain(system_message=system_prompt)
+        chain = self._setup_langchain(system_prompt=system_prompt)
         for group in groups:
             prompt_key = group + "_prompt"
             start = time.time()
             # generate with async
             (
-                generations,
+                tasks,
                 duplicated_prompts_dict[prompt_key],
-            ) = await self._generate_in_batches(
+            ) = self._create_tasks(
                 chain=chain, prompts=prompts_dict[prompt_key]
             )
-            responses = []
-            for response in generations:
-                responses.extend(response)
-            responses_dict[group + "_response"] = responses
+            responses_dict[group + "_response"] = await asyncio.gather(*tasks)
             stop = time.time()
-
-            if (stop - start < 60) and (
-                (self.max_calls_per_min <= len(responses))
-                if self.max_calls_per_min
-                else False
-            ):
-                time.sleep(61 - stop + start)
 
         non_completion_rate = len(
             [
