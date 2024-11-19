@@ -32,16 +32,15 @@ async def test_counterfactual(monkeypatch):
         MOCKED_GENDER_PROMPTS.values()
     )
     MOCKED_RESPONSES = [
-        [
-            "Mocked response 1",
-            "Mocked response 2",
-            "Unable to get response",
-            "Mocked response 4",
-        ]
+            "Gender response",
+            "Race response",
     ]
-
-    async def mock_generate_in_batches(*args, **kwargs):
-        return MOCKED_RESPONSES, MOCKED_CF_PROMPTS.pop(0)
+    
+    async def mock_async_api_call(prompt, *args, **kwargs):
+        if "1" in prompt or "2" in prompt:
+            return MOCKED_RESPONSES[0]
+        elif "3" in prompt or "4" in prompt:
+            return MOCKED_RESPONSES[-1]
 
     mock_object = AzureChatOpenAI(
         deployment_name="YOUR-DEPLOYMENT",
@@ -54,7 +53,7 @@ async def test_counterfactual(monkeypatch):
     counterfactual_object = CounterfactualGenerator(langchain_llm=mock_object)
 
     monkeypatch.setattr(
-        counterfactual_object, "_generate_in_batches", mock_generate_in_batches
+        counterfactual_object, "_async_api_call", mock_async_api_call
     )
 
     race_prompts = counterfactual_object.parse_texts(
@@ -82,7 +81,7 @@ async def test_counterfactual(monkeypatch):
     )
     assert all(
         [
-            cf_data["data"][key] == MOCKED_RESPONSES[0]
+            cf_data["data"][key] == [MOCKED_RESPONSES[-1]]*2
             for key in cf_data["data"]
             if "response" in key
         ]
@@ -93,7 +92,7 @@ async def test_counterfactual(monkeypatch):
     )
     assert all(
         [
-            cf_data["data"][key] == MOCKED_RESPONSES[0]
+            cf_data["data"][key] == [MOCKED_RESPONSES[0]]*2
             for key in cf_data["data"]
             if "response" in key
         ]
