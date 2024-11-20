@@ -42,13 +42,13 @@ asyncio = "^3.4.3"
 sentence-transformers = "^2.7.0"
 typing = "<3.10"
 tiktoken = "^0.7.0"
-pytest-asyncio = "^0.24.0"
 
 [tool.poetry.group.dev.dependencies]
 langchain-openai = "^0.2.9"
 pre-commit = "3.7.1"
 ruff = "^0.4.8"
 pytest = "^8.3.3"
+pytest-asyncio = "^0.24.0"
 
 [tool.ruff.lint]
 extend-select = ["I"] # lets Ruff catch and fix unsorted imports
