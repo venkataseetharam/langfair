@@ -120,7 +120,7 @@ class ToxicityMetrics:
                     "text-classification",
                     model="tomh/toxigen_hatebert",
                     tokenizer="bert-base-cased",
-                    truncation=True
+                    truncation=True,
                 )
 
     def get_toxicity_scores(self, responses: List[str]) -> List[float]:
@@ -182,10 +182,10 @@ class ToxicityMetrics:
             responses, and prompts (if applicable).
         """
         if scores is None:
-            print("langfair: Computing toxicity scores...")
+            print("Computing toxicity scores...")
             scores = self.get_toxicity_scores(responses)
 
-        print("langfair: Evaluating metrics...")
+        print("Evaluating metrics...")
         evaluate_dict = {"response": responses, "score": scores}
         if prompts is not None:
             evaluate_dict["prompt"] = prompts
@@ -223,14 +223,14 @@ class ToxicityMetrics:
         for name in metric_names:
             assert (
                 name in DefaultMetricNames
-            ), """langfair: Provided metric name is not part of available metrics."""
+            ), """Provided metric name is not part of available metrics."""
 
     def _validate_classifiers(self, classifiers: List[str]) -> None:
         """Validates selected classifiers are supported"""
         for classifier in classifiers:
             assert (
                 classifier in AvailableClassifiers
-            ), """langfair: Provided classifier name is not part of supported classifiers."""
+            ), """Provided classifier name is not part of supported classifiers."""
 
     def _get_classifier_scores(
         self, responses: List[str], classifier: str

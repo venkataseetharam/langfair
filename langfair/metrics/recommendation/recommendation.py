@@ -189,15 +189,15 @@ class RecommendationMetrics:
         """
         assert (
             len(rec_lists1) == len(rec_lists2)
-        ), "langfair: The same number of recommendation lists must be provided for both groups"
+        ), "The same number of recommendation lists must be provided for both groups"
         K = len(rec_lists1[0])
         for i in range(len(rec_lists1)):
             assert (
                 len(rec_lists1[i]) == K
-            ), "langfair: Recommendation lists must all be of equal length"
+            ), "Recommendation lists must all be of equal length"
             assert (
                 len(rec_lists2[i]) == K
-            ), "langfair: Recommendation lists must all be of equal length"
+            ), "Recommendation lists must all be of equal length"
         return {
             metric.name: self._pairwise_calculations(rec_lists1, rec_lists2, metric)
             for metric in self.metrics
@@ -250,7 +250,7 @@ class RecommendationMetrics:
         for name in metric_names:
             assert (
                 name in DefaultMetricNames
-            ), """langfair: Provided metric name is not part of available metrics."""
+            ), """Provided metric name is not part of available metrics."""
 
     @staticmethod
     def _run_input_checks(
@@ -276,14 +276,14 @@ class RecommendationMetrics:
                 assert isinstance(neutral_dict[key], list), type_msg
                 assert (
                     len(neutral_dict[key]) == K
-                ), "langfair: Recommendation lists must all be of equal length."
+                ), "Recommendation lists must all be of equal length."
         for group_dict in group_dict_list:
             assert isinstance(group_dict, dict), type_msg
             for key in group_dict.keys():
                 assert isinstance(group_dict[key], list), type_msg
                 assert (
                     len(group_dict[key]) == K
-                ), "langfair: Recommendation lists must all be of equal length."
+                ), "Recommendation lists must all be of equal length."
         return
 
     @staticmethod

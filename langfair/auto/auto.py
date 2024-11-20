@@ -42,11 +42,11 @@ class AutoEval:
         prompts: List[str],
         responses: Optional[List[str]] = None,
         langchain_llm: Any = None,
-        max_calls_per_min: Optional[int] = None,
         suppressed_exceptions: Optional[Tuple] = None,
         metrics: MetricTypes = None,
         toxicity_device: str = "cpu",
         neutralize_tokens: str = True,
+        max_calls_per_min: Optional[int] = None,
     ) -> None:
         """
         This class calculates all toxicity, stereotype, and counterfactual metrics support by langfair
@@ -63,12 +63,8 @@ class AutoEval:
             A langchain llm object to get passed to chain constructor. User is responsible for specifying
             temperature and other relevant parameters to the constructor of their `langchain_llm` object.
 
-        max_calls_per_min : int, default=None
-            Specifies how many api calls to make per minute to avoid a rate limit error. By default, no
-            limit is specified.
-            
         suppressed_exceptions : tuple, default=None
-            Specifies which exceptions to handle as 'Unable to get response' rather than raising the 
+            Specifies which exceptions to handle as 'Unable to get response' rather than raising the
             exception
 
         metrics : dict or list of str, default option compute all supported metrics.
@@ -81,6 +77,9 @@ class AutoEval:
         neutralize_tokens: boolean, default=True
             An indicator attribute to use masking for the computation of Blue and RougeL metrics. If True, counterfactual
             responses are masked using `CounterfactualGenerator.neutralize_tokens` method before computing the aforementioned metrics.
+
+        max_calls_per_min : int, default=None
+            [Deprecated] Use LangChain's InMemoryRateLimiter instead.
         """
         self.prompts = self._validate_list_type(prompts)
         self.responses = self._validate_list_type(responses)
@@ -92,14 +91,14 @@ class AutoEval:
         self.results = {}
 
         self.cf_generator_object = CounterfactualGenerator(
-            langchain_llm=langchain_llm, 
-            max_calls_per_min=max_calls_per_min, 
-            suppressed_exceptions=suppressed_exceptions
+            langchain_llm=langchain_llm,
+            max_calls_per_min=max_calls_per_min,
+            suppressed_exceptions=suppressed_exceptions,
         )
         self.generator_object = ResponseGenerator(
-            langchain_llm=langchain_llm, 
-            max_calls_per_min=max_calls_per_min, 
-            suppressed_exceptions=suppressed_exceptions
+            langchain_llm=langchain_llm,
+            max_calls_per_min=max_calls_per_min,
+            suppressed_exceptions=suppressed_exceptions,
         )
 
     async def evaluate(
@@ -121,8 +120,8 @@ class AutoEval:
         if metrics is not None:
             self.metrics = self._validate_metrics(metrics)
 
-        print("\033[1mStep 1: Fairness Through Unawareness\033[0m")
-        print("------------------------------------")
+        print("\033[1mStep 1: Fairness Through Unawareness Check\033[0m")
+        print("------------------------------------------")
         # 1. Check for Fairness Through Unawareness FTU
         # Parse prompts for protected attribute words
         protected_words = {"race": 0, "gender": 0}
@@ -136,47 +135,39 @@ class AutoEval:
             )
             total_protected_words += protected_words[attribute]
             print(
-                "langfair: Number of prompts containing {} words: {}".format(
-                    attribute, protected_words[attribute]
-                )
+                f"""Number of prompts containing {attribute} words: {protected_words[attribute]}"""
             )
-            if protected_words[attribute] == 0:
-                print(
-                    "- langfair: The prompts satisfy fairness through unawareness for {} words, the recommended risk assessment only include Toxicity".format(
-                        attribute
-                    )
-                )
-            else:
-                print(
-                    "- langfair: The prompts do not satisfy fairness through unawareness for {} words, the recommended risk assessments include Toxicity, Stereotype, and Counterfactual Discrimination.".format(
-                        attribute
-                    )
-                )
 
         if total_protected_words > 0:
+            print(
+                "Fairness through unawareness is not satisfied. Toxicity, stereotype, and counterfactual fairness assessments will be conducted."
+            )
             print("\n\033[1mStep 2: Generate Counterfactual Dataset\033[0m")
             print("---------------------------------------")
-        # 2. Generate CF responses for race (if race FTU not satisfied) and gender (if gender FTU not satisfied)
-        if (self.counterfactual_responses is None) and (
-            "counterfactual" in self.metrics
-        ):
-            self.counterfactual_responses = {}
-            self.counterfactual_response_metadata = {}
-            for attribute in protected_words.keys():
-                if protected_words[attribute] > 0:
-                    cf_generation = await self.cf_generator_object.generate_responses(
-                        prompts=self.prompts, attribute=attribute
-                    )
-                    cf_response = {
-                        k: v
-                        for k, v in cf_generation.items()
-                        if self.cf_generator_object.failure_message not in v
-                    }
-                    self.counterfactual_responses[attribute] = cf_response
-                    self.counterfactual_response_metadata[attribute] = cf_generation[
-                        "metadata"
-                    ]
+            # 2. Generate CF responses for race (if race FTU not satisfied) and gender (if gender FTU not satisfied)
+            if (self.counterfactual_responses is None) and (
+                "counterfactual" in self.metrics
+            ):
+                self.counterfactual_responses = {}
+                self.counterfactual_response_metadata = {}
+                for attribute in protected_words.keys():
+                    if protected_words[attribute] > 0:
+                        cf_generation = await self.cf_generator_object.generate_responses(
+                            prompts=self.prompts, attribute=attribute
+                        )
+                        cf_response = {
+                            k: v
+                            for k, v in cf_generation.items()
+                            if self.cf_generator_object.failure_message not in v
+                        }
+                        self.counterfactual_responses[attribute] = cf_response
+                        self.counterfactual_response_metadata[attribute] = cf_generation[
+                            "metadata"
+                        ]
         else:
+            print(
+                "Fairness through unawareness is satisfied. Toxicity and stereotype assessments will be conducted."
+            )
             print("\n\033[1m(Skipping) Step 2: Generate Counterfactual Dataset\033[0m")
             print("--------------------------------------------------")
 
@@ -227,7 +218,7 @@ class AutoEval:
         if total_protected_words > 0:
             print("\n\033[1mStep 6: Evaluate Counterfactual Metrics\033[0m")
             print("---------------------------------------")
-            print("langfair: Evaluating metrics...")
+            print("Evaluating metrics...")
             cf_results = {}
             counterfactual_object = CounterfactualMetrics(
                 neutralize_tokens=self.neutralize_tokens
@@ -336,19 +327,19 @@ class AutoEval:
                     tmp[metric] = DefaultMetrics[metric]
                 else:
                     raise RuntimeError(
-                        "langfair: If `metrics` is a list, it should be a subset of following list ['counterfactual', 'stereotype', 'toxicity']"
+                        "If `metrics` is a list, it should be a subset of following list ['counterfactual', 'stereotype', 'toxicity']"
                     )
             metrics = tmp
         elif isinstance(metrics, dict):
             for key in metrics.keys():
                 if key not in DefaultMetrics.keys():
-                    raise KeyError("langfair: {} not found".format(key))
+                    raise KeyError("{} not found".format(key))
                 self._check_list(
                     metrics[key], DefaultMetrics[key], "metrics['" + key + "']"
                 )
         else:
             raise TypeError(
-                "langfair: Attribute `metrics` should be a list of strings or a dictionary of list of strings"
+                "Attribute `metrics` should be a list of strings or a dictionary of list of strings"
             )
         return metrics
 
@@ -358,7 +349,7 @@ class AutoEval:
         if isinstance(input_variable, list):
             if len(input_variable) == 0 or not isinstance(input_variable[0], str):
                 raise RuntimeError(
-                    "langfair: List {} should contain strings and can't be empty.".format(
+                    "List {} should contain strings and can't be empty.".format(
                         input_variable
                     )
                 )
@@ -372,11 +363,11 @@ class AutoEval:
         for list1_i in list1:
             if not isinstance(list1_i, str):
                 raise TypeError(
-                    "langfair: Type of list '{}' should be a string.".format(error_tag)
+                    "Type of list '{}' should be a string.".format(error_tag)
                 )
             elif list1_i not in list2:
                 raise RuntimeError(
-                    "langfair: Provided '{}' metric is not an in-built langfair metric".format(
+                    "Provided '{}' metric is not an in-built langfair metric".format(
                         error_tag
                     )
                 )

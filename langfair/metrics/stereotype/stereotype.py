@@ -111,4 +111,4 @@ class StereotypeMetrics:
         for name in metric_names:
             assert (
                 name in DefaultMetricNames
-            ), """langfair: Provided metric name is not part of available metrics."""
+            ), """Provided metric name is not part of available metrics."""
