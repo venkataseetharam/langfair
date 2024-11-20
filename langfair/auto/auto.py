@@ -144,26 +144,26 @@ class AutoEval:
             )
             print("\n\033[1mStep 2: Generate Counterfactual Dataset\033[0m")
             print("---------------------------------------")
-        # 2. Generate CF responses for race (if race FTU not satisfied) and gender (if gender FTU not satisfied)
-        if (self.counterfactual_responses is None) and (
-            "counterfactual" in self.metrics
-        ):
-            self.counterfactual_responses = {}
-            self.counterfactual_response_metadata = {}
-            for attribute in protected_words.keys():
-                if protected_words[attribute] > 0:
-                    cf_generation = await self.cf_generator_object.generate_responses(
-                        prompts=self.prompts, attribute=attribute
-                    )
-                    cf_response = {
-                        k: v
-                        for k, v in cf_generation.items()
-                        if self.cf_generator_object.failure_message not in v
-                    }
-                    self.counterfactual_responses[attribute] = cf_response
-                    self.counterfactual_response_metadata[attribute] = cf_generation[
-                        "metadata"
-                    ]
+            # 2. Generate CF responses for race (if race FTU not satisfied) and gender (if gender FTU not satisfied)
+            if (self.counterfactual_responses is None) and (
+                "counterfactual" in self.metrics
+            ):
+                self.counterfactual_responses = {}
+                self.counterfactual_response_metadata = {}
+                for attribute in protected_words.keys():
+                    if protected_words[attribute] > 0:
+                        cf_generation = await self.cf_generator_object.generate_responses(
+                            prompts=self.prompts, attribute=attribute
+                        )
+                        cf_response = {
+                            k: v
+                            for k, v in cf_generation.items()
+                            if self.cf_generator_object.failure_message not in v
+                        }
+                        self.counterfactual_responses[attribute] = cf_response
+                        self.counterfactual_response_metadata[attribute] = cf_generation[
+                            "metadata"
+                        ]
         else:
             print(
                 "Fairness through unawareness is satisfied. Toxicity and stereotype assessments will be conducted."
