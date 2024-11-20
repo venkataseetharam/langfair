@@ -192,10 +192,10 @@ class CounterfactualGenerator(ResponseGenerator):
             attribute words in provided text
         """
         assert not (custom_list and attribute), """
-        langfair: Either custom_list or attribute must be None.
+        Either custom_list or attribute must be None.
         """
         assert custom_list or attribute in ["race", "gender"], """
-        langfair: If custom_list is None, attribute must be 'race' or 'gender'.
+        If custom_list is None, attribute must be 'race' or 'gender'.
         """
         result = []
         for text in texts:
@@ -235,12 +235,12 @@ class CounterfactualGenerator(ResponseGenerator):
             Dictionary containing counterfactual prompts
         """
         assert not (custom_dict and attribute), """
-        langfair: Either custom_dict or attribute must be None.
+        Either custom_dict or attribute must be None.
         """
         assert custom_dict or attribute in [
             "gender",
             "race",
-        ], "langfair: If custom_dict is None, attribute must be 'gender' or 'race'."
+        ], "If custom_dict is None, attribute must be 'gender' or 'race'."
 
         custom_list = (
             list(itertools.chain(*custom_dict.values())) if custom_dict else None
@@ -359,7 +359,7 @@ class CounterfactualGenerator(ResponseGenerator):
         if self.llm.temperature == 0:
             assert (
                 count == 1
-            ), "langfair: temperature must be greater than 0 if count > 1"
+            ), "temperature must be greater than 0 if count > 1"
         self.count = count
 
         # create counterfactual prompts
@@ -370,7 +370,7 @@ class CounterfactualGenerator(ResponseGenerator):
             custom_dict=custom_dict,
         )
 
-        print(f"""langfair: Generating {count} responses for each {
+        print(f"""Generating {count} responses for each {
             attribute if attribute else 'group-specific'
         } prompt...""")
 
@@ -396,7 +396,7 @@ class CounterfactualGenerator(ResponseGenerator):
             ]
         ) / len(list(responses_dict.values())[0])
 
-        print("langfair: Responses successfully generated!")
+        print("Responses successfully generated!")
         return {
             "data": {
                 **duplicated_prompts_dict,
@@ -420,7 +420,7 @@ class CounterfactualGenerator(ResponseGenerator):
         custom_list: Optional[List[str]] = None,
     ) -> Tuple[List[str], List[List[str]]]:
         """Subset prompts that contain protected attribute words"""
-        attribute_to_print = attribute if attribute else "protected attribute"
+        attribute_to_print = "Protected attribute" if not attribute else attribute.capitalize()
         attribute_words = self.parse_texts(
             texts=prompts, attribute=attribute, custom_list=custom_list
         )
@@ -428,10 +428,10 @@ class CounterfactualGenerator(ResponseGenerator):
             prompt for i, prompt in enumerate(prompts) if attribute_words[i]
         ]
         assert len(prompts_subset) > 0, f"""
-        langfair: Provided prompts do not contain any {attribute_to_print} words.
+        Provided prompts do not contain any {attribute_to_print} words.
         """
         print(
-            f"langfair: {attribute_to_print} words found in {len(prompts_subset)} prompts."
+            f"{attribute_to_print} words found in {len(prompts_subset)} prompts."
         )
         return prompts_subset, attribute_words
 

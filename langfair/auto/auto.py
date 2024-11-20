@@ -134,14 +134,13 @@ class AutoEval:
                 [1 if len(col_item) > 0 else 0 for col_item in col]
             )
             total_protected_words += protected_words[attribute]
-            yes_no = "do not " if protected_words[attribute] > 0 else " "
-            ftu_text = f"""langfair: The prompts {yes_no}satisfy fairness through unawareness for {attribute}. """
-            word_count_text = f"""Number of prompts containing {attribute} words: {protected_words[attribute]}"""
-            print(ftu_text + word_count_text)
+            print(
+                f"""Number of prompts containing {attribute} words: {protected_words[attribute]}"""
+            )
 
         if total_protected_words > 0:
             print(
-                "langfair: Toxicity, stereotype, and counterfactual fairness assessments will be conducted."
+                "Fairness through unawareness is not satisfied. Toxicity, stereotype, and counterfactual fairness assessments will be conducted."
             )
             print("\n\033[1mStep 2: Generate Counterfactual Dataset\033[0m")
             print("---------------------------------------")
@@ -166,7 +165,9 @@ class AutoEval:
                         "metadata"
                     ]
         else:
-            print("langfair: Toxicity and stereotype assessments will be conducted.")
+            print(
+                "Fairness through unawareness is satisfied. Toxicity and stereotype assessments will be conducted."
+            )
             print("\n\033[1m(Skipping) Step 2: Generate Counterfactual Dataset\033[0m")
             print("--------------------------------------------------")
 
@@ -217,7 +218,7 @@ class AutoEval:
         if total_protected_words > 0:
             print("\n\033[1mStep 6: Evaluate Counterfactual Metrics\033[0m")
             print("---------------------------------------")
-            print("langfair: Evaluating metrics...")
+            print("Evaluating metrics...")
             cf_results = {}
             counterfactual_object = CounterfactualMetrics(
                 neutralize_tokens=self.neutralize_tokens
@@ -326,19 +327,19 @@ class AutoEval:
                     tmp[metric] = DefaultMetrics[metric]
                 else:
                     raise RuntimeError(
-                        "langfair: If `metrics` is a list, it should be a subset of following list ['counterfactual', 'stereotype', 'toxicity']"
+                        "If `metrics` is a list, it should be a subset of following list ['counterfactual', 'stereotype', 'toxicity']"
                     )
             metrics = tmp
         elif isinstance(metrics, dict):
             for key in metrics.keys():
                 if key not in DefaultMetrics.keys():
-                    raise KeyError("langfair: {} not found".format(key))
+                    raise KeyError("{} not found".format(key))
                 self._check_list(
                     metrics[key], DefaultMetrics[key], "metrics['" + key + "']"
                 )
         else:
             raise TypeError(
-                "langfair: Attribute `metrics` should be a list of strings or a dictionary of list of strings"
+                "Attribute `metrics` should be a list of strings or a dictionary of list of strings"
             )
         return metrics
 
@@ -348,7 +349,7 @@ class AutoEval:
         if isinstance(input_variable, list):
             if len(input_variable) == 0 or not isinstance(input_variable[0], str):
                 raise RuntimeError(
-                    "langfair: List {} should contain strings and can't be empty.".format(
+                    "List {} should contain strings and can't be empty.".format(
                         input_variable
                     )
                 )
@@ -362,11 +363,11 @@ class AutoEval:
         for list1_i in list1:
             if not isinstance(list1_i, str):
                 raise TypeError(
-                    "langfair: Type of list '{}' should be a string.".format(error_tag)
+                    "Type of list '{}' should be a string.".format(error_tag)
                 )
             elif list1_i not in list2:
                 raise RuntimeError(
-                    "langfair: Provided '{}' metric is not an in-built langfair metric".format(
+                    "Provided '{}' metric is not an in-built langfair metric".format(
                         error_tag
                     )
                 )

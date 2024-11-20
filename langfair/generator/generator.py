@@ -110,10 +110,10 @@ class ResponseGenerator:
             tiktoken_model_name in self.cost_mapping.keys()
         ), f"Only {list(self.cost_mapping.keys())} are supported"
 
-        print(f"langfair: Estimating cost based on {count} generations per prompt...")
+        print(f"Estimating cost based on {count} generations per prompt...")
 
         if example_responses is None:
-            print("langfair: Generating sample of responses for cost estimation...")
+            print("Generating sample of responses for cost estimation...")
             prompts = list(prompts)
             sampled_prompts = random.sample(
                 prompts, min(response_sample_size, len(prompts))
@@ -215,12 +215,12 @@ class ResponseGenerator:
         """
         assert all(
             isinstance(prompt, str) for prompt in prompts
-        ), "langfair: If using custom prompts, please ensure `prompts` is of type list[str]"
-        print(f"langfair: Generating {count} responses per prompt...")
+        ), "If using custom prompts, please ensure `prompts` is of type list[str]"
+        print(f"Generating {count} responses per prompt...")
         if self.llm.temperature == 0:
             assert (
                 count == 1
-            ), "langfair: temperature must be greater than 0 if count > 1"
+            ), "temperature must be greater than 0 if count > 1"
         self.count = count
 
         # set up langchain and generate asynchronously
@@ -231,7 +231,7 @@ class ResponseGenerator:
             responses
         )
 
-        print("langfair: Responses successfully generated!")
+        print("Responses successfully generated!")
         return {
             "data": {
                 "prompt": duplicated_prompts,

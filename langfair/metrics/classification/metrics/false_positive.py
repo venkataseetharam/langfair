@@ -62,13 +62,13 @@ class FalsePositiveRateParity(Metric):
         )
         assert np.array_equal(
             unique_preds, [0, 1]
-        ), "langfair: y_pred must contain exactly two unique values: 0 and 1"
+        ), "y_pred must contain exactly two unique values: 0 and 1"
         assert np.array_equal(
             unique_labels, [0, 1]
-        ), "langfair: y_true must contain exactly two unique values: 0 and 1"
+        ), "y_true must contain exactly two unique values: 0 and 1"
         assert (
             len(unique_groups) == 2
-        ), "langfair: groups must contain exactly two unique values"
+        ), "groups must contain exactly two unique values"
 
         cm1 = self.binary_confusion_matrix(
             y_true[groups == unique_groups[0]], y_pred[groups == unique_groups[0]]
