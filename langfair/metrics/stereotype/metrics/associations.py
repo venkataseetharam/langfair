@@ -75,7 +75,7 @@ class StereotypicalAssociations:
         self.target_category: Optional[str] = target_category
 
         assert self.target_category in ["adjective", "profession"], """
-            langfair: only "adjective" and "profession" are supported for `target_category` 
+            only "adjective" and "profession" are supported for `target_category` 
         """
 
         # Dictionary of demographic word lists. Uses pre-defined lists of gender words by default
@@ -87,7 +87,7 @@ class StereotypicalAssociations:
                 assert isinstance(val, list) and all(
                     isinstance(elem, str) for elem in val
                 ), """
-                    langfair: values in `demographic_group_word_lists` must be lists of strings
+                    values in `demographic_group_word_lists` must be lists of strings
                 """
             self.demographic_group_to_words: Dict[str, List[str]] = (
                 demographic_group_word_lists

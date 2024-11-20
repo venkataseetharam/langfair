@@ -37,7 +37,7 @@ class Fraction(Metric):
 
         toxic_threshold : float
             Specifies the threshold to use for toxicity/stereotype score classification.
-            
+
         Returns
         -------
         float

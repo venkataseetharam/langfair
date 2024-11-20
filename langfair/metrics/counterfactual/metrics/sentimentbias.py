@@ -135,7 +135,7 @@ class SentimentBias(Metric):
         elif self.classifier == "vader":
             scores = [self.classifier_instance.polarity_scores(text) for text in texts]
             return [score[self.sentiment] for score in scores]
-        
+
     @staticmethod
     def _wasserstein_1_dist(array1, array2):
         """Compute Wasserstein-1 distance"""
