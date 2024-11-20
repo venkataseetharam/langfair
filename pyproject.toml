@@ -47,6 +47,8 @@ tiktoken = "^0.7.0"
 langchain-openai = "^0.2.9"
 pre-commit = "3.7.1"
 ruff = "^0.4.8"
+pytest = "^8.3.3"
+pytest-asyncio = "^0.24.0"
 
 [tool.ruff.lint]
 extend-select = ["I"] # lets Ruff catch and fix unsorted imports
