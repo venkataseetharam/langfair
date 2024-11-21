@@ -281,22 +281,23 @@ class ResponseGenerator:
                 raise
 
     def _validate_exceptions(
-        self, Union[Tuple[BaseException], BaseException]: suppressed_exceptions
+        self, suppressed_exceptions: Union[Tuple[BaseException], BaseException]
     ) -> None:
+        type_error = "suppressed_exceptions must be a subclass of BaseException or a tuple of subclasses of BaseException"
         if not suppressed_exceptions:
             self.suppressed_exceptions = ()
-        elif isinstance(suppressed_exceptions, BaseException):
-            self.suppressed_exceptions = (suppressed_exceptions,)
         elif isinstance(suppressed_exceptions, tuple):
             if not all(issubclass(item, BaseException) for item in suppressed_exceptions):
-                raise TypeError(
-                    "suppressed_exceptions must be a subclass of BaseException or a tuple of subclasses of BaseException"
-                )
+                raise TypeError(type_error)
             self.suppressed_exceptions = suppressed_exceptions
         else:
-            raise TypeError(
-                "suppressed_exceptions must be a subclass of BaseException or a tuple of subclasses of BaseException"
-            )
+            try: 
+                if issubclass(suppressed_exceptions, BaseException):
+                    self.suppressed_exceptions = (suppressed_exceptions,)
+                else: 
+                    raise TypeError(type_error)
+            except:
+                raise TypeError(type_error)
             
     @staticmethod
     def _num_tokens_from_messages(

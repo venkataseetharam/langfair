@@ -11,7 +11,7 @@
 import asyncio
 import itertools
 import warnings
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import nltk
 import sacremoses
@@ -56,7 +56,7 @@ class CounterfactualGenerator(ResponseGenerator):
     def __init__(
         self,
         langchain_llm: Any = None,
-        suppressed_exceptions: Optional[Tuple] = None,
+        suppressed_exceptions: Optional[Union[Tuple[BaseException], BaseException]] = None,
         max_calls_per_min: Optional[int] = None,
     ) -> None:
         """
@@ -82,8 +82,6 @@ class CounterfactualGenerator(ResponseGenerator):
             suppressed_exceptions=suppressed_exceptions,
             max_calls_per_min=max_calls_per_min,
         )
-        # Create class attributes
-
         self.attribute_to_word_lists = {
             "race": ALL_RACE_WORDS,
             "gender": ALL_GENDER_WORDS,
