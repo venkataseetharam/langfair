@@ -50,7 +50,11 @@ class ResponseGenerator:
         self.failure_message = FAILURE_MESSAGE
         self.token_cost_date = TOKEN_COST_DATE
         self.llm = langchain_llm
-        self._validate_exceptions(suppressed_exceptions)
+        if self._valid_exceptions(suppressed_exceptions):
+            self.suppressed_exceptions = suppressed_exceptions
+        else:
+            raise TypeError("suppressed_exceptions must be a subclass of BaseException or a tuple of subclasses of BaseException")
+        
         if max_calls_per_min:
             warnings.warn(
                 "max_calls_per_min is deprecated and will not be used. Use LangChain's `InMemoryRateLimiter` instead",
@@ -223,7 +227,7 @@ class ResponseGenerator:
         chain = self._setup_langchain(system_prompt=system_prompt)
         tasks, duplicated_prompts = self._create_tasks(chain=chain, prompts=prompts)
         responses = await asyncio.gather(*tasks)
-        non_completion_rate = len([r for r in responses if r == FAILURE_MESSAGE]) / len(
+        non_completion_rate = len([r for r in responses if r == self.failure_message]) / len(
             responses
         )
 
@@ -274,25 +278,28 @@ class ResponseGenerator:
         try:
             result = await chain.ainvoke([prompt])
             return result
-        except self.suppressed_exceptions:
-            return FAILURE_MESSAGE
-        except Exception:
-            raise
-
-    def _validate_exceptions(self, suppressed_exceptions: Union[Tuple[BaseException], BaseException]) -> None:
-        type_error = "suppressed_exceptions must be a subclass of BaseException or a tuple of subclasses of BaseException"
-        if not suppressed_exceptions:
-            self.suppressed_exceptions = DummyException
+        except Exception as err:
+            if self.suppressed_exceptions is not None:
+                if isinstance(err, self.suppressed_exceptions):
+                    return self.failure_message
+            raise err
+    
+    @staticmethod
+    def _valid_exceptions(exceptions: Union[Tuple[BaseException], BaseException]) -> bool:
+        """Returns true if exceptions is a subclass of BaseException or a tuple of  subclasses of BaseException
+        """
+        if exceptions is None:
+            return True
         else:
             try:
-                if isinstance(suppressed_exceptions, tuple) and all(issubclass(item, BaseException) for item in suppressed_exceptions):
-                    self.suppressed_exceptions = suppressed_exceptions
-                elif issubclass(suppressed_exceptions, BaseException):
-                    self.suppressed_exceptions = suppressed_exceptions
+                if isinstance(exceptions, tuple) and all(issubclass(item, BaseException) for item in exceptions):
+                    return True
+                elif issubclass(exceptions, BaseException):
+                    return True
                 else:
-                    TypeError(type_error)
+                    return False
             except:
-                raise TypeError(type_error)
+                return False
             
     @staticmethod
     def _num_tokens_from_messages(
@@ -347,6 +354,3 @@ class ResponseGenerator:
         elif not prompt:
             num_tokens += -1
         return num_tokens
-
-class DummyException(Exception):
-    pass
