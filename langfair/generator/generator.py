@@ -12,7 +12,7 @@ import asyncio
 import itertools
 import random
 import warnings
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import langchain_core
 import numpy as np
@@ -20,17 +20,14 @@ import tiktoken
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
-from langfair.constants.cost_data import COST_MAPPING
-
-FAILURE_MESSAGE = "Unable to get response"
-TOKEN_COST_DATE = "10/21/2024"
+from langfair.constants.cost_data import COST_MAPPING, FAILURE_MESSAGE, TOKEN_COST_DATE
 
 
 class ResponseGenerator:
     def __init__(
         self,
         langchain_llm: Any = None,
-        suppressed_exceptions: Optional[Tuple] = None,
+        suppressed_exceptions: Optional[Union[Tuple[BaseException], BaseException]] = None,
         max_calls_per_min: Optional[int] = None,
     ) -> None:
         """
@@ -49,13 +46,12 @@ class ResponseGenerator:
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
         """
-        self.llm = langchain_llm
-        self.max_calls_per_min = max_calls_per_min
-        self.suppressed_exceptions = suppressed_exceptions
         self.cost_mapping = COST_MAPPING
         self.failure_message = FAILURE_MESSAGE
         self.token_cost_date = TOKEN_COST_DATE
-        if self.max_calls_per_min:
+        self.llm = langchain_llm
+        self._validate_exceptions(suppressed_exceptions)
+        if max_calls_per_min:
             warnings.warn(
                 "max_calls_per_min is deprecated and will not be used. Use LangChain's `InMemoryRateLimiter` instead",
                 DeprecationWarning,
@@ -283,6 +279,21 @@ class ResponseGenerator:
         except Exception:
             raise
 
+    def _validate_exceptions(self, suppressed_exceptions: Union[Tuple[BaseException], BaseException]) -> None:
+        type_error = "suppressed_exceptions must be a subclass of BaseException or a tuple of subclasses of BaseException"
+        if not suppressed_exceptions:
+            self.suppressed_exceptions = DummyException
+        else:
+            try:
+                if isinstance(suppressed_exceptions, tuple) and all(issubclass(item, BaseException) for item in suppressed_exceptions):
+                    self.suppressed_exceptions = suppressed_exceptions
+                elif issubclass(suppressed_exceptions, BaseException):
+                    self.suppressed_exceptions = suppressed_exceptions
+                else:
+                    TypeError(type_error)
+            except:
+                raise TypeError(type_error)
+            
     @staticmethod
     def _num_tokens_from_messages(
         messages: List[Dict[str, str]], model: str, prompt: bool = True
@@ -336,3 +347,6 @@ class ResponseGenerator:
         elif not prompt:
             num_tokens += -1
         return num_tokens
+
+class DummyException(Exception):
+    pass
