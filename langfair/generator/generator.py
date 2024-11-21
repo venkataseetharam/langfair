@@ -223,7 +223,7 @@ class ResponseGenerator:
         chain = self._setup_langchain(system_prompt=system_prompt)
         tasks, duplicated_prompts = self._create_tasks(chain=chain, prompts=prompts)
         responses = await asyncio.gather(*tasks)
-        non_completion_rate = len([r for r in responses if r == FAILURE_MESSAGE]) / len(
+        non_completion_rate = len([r for r in responses if r == self.failure_message]) / len(
             responses
         )
 
