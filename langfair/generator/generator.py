@@ -274,28 +274,23 @@ class ResponseGenerator:
         try:
             result = await chain.ainvoke([prompt])
             return result
-        except Exception as e:
-            if any(isinstance(e, exc) for exc in self.suppressed_exceptions):
-                return FAILURE_MESSAGE
-            else:
-                raise
+        except self.suppressed_exceptions:
+            return FAILURE_MESSAGE
+        except Exception:
+            raise
 
-    def _validate_exceptions(
-        self, suppressed_exceptions: Union[Tuple[BaseException], BaseException]
-    ) -> None:
+    def _validate_exceptions(self, suppressed_exceptions: Union[Tuple[BaseException], BaseException]) -> None:
         type_error = "suppressed_exceptions must be a subclass of BaseException or a tuple of subclasses of BaseException"
         if not suppressed_exceptions:
-            self.suppressed_exceptions = ()
-        elif isinstance(suppressed_exceptions, tuple):
-            if not all(issubclass(item, BaseException) for item in suppressed_exceptions):
-                raise TypeError(type_error)
-            self.suppressed_exceptions = suppressed_exceptions
+            self.suppressed_exceptions = DummyException
         else:
-            try: 
-                if issubclass(suppressed_exceptions, BaseException):
-                    self.suppressed_exceptions = (suppressed_exceptions,)
-                else: 
-                    raise TypeError(type_error)
+            try:
+                if isinstance(suppressed_exceptions, tuple) and all(issubclass(item, BaseException) for item in suppressed_exceptions):
+                    self.suppressed_exceptions = suppressed_exceptions
+                elif issubclass(suppressed_exceptions, BaseException):
+                    self.suppressed_exceptions = suppressed_exceptions
+                else:
+                    TypeError(type_error)
             except:
                 raise TypeError(type_error)
             
@@ -352,3 +347,6 @@ class ResponseGenerator:
         elif not prompt:
             num_tokens += -1
         return num_tokens
+
+class DummyException(Exception):
+    pass
