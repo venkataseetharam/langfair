@@ -50,7 +50,11 @@ class ResponseGenerator:
         self.failure_message = FAILURE_MESSAGE
         self.token_cost_date = TOKEN_COST_DATE
         self.llm = langchain_llm
-        self.suppressed_exceptions = suppressed_exceptions
+        if self._valid_exceptions(suppressed_exceptions):
+            self.suppressed_exceptions = suppressed_exceptions
+        else:
+            raise TypeError("suppressed_exceptions must be a subclass of BaseException or a tuple of subclasses of BaseException")
+        
         if max_calls_per_min:
             warnings.warn(
                 "max_calls_per_min is deprecated and will not be used. Use LangChain's `InMemoryRateLimiter` instead",
@@ -279,7 +283,23 @@ class ResponseGenerator:
                 if isinstance(err, self.suppressed_exceptions):
                     return self.failure_message
             raise err
-
+    
+    @staticmethod
+    def _valid_exceptions(exceptions: Union[Tuple[BaseException], BaseException]) -> bool:
+        """Returns true if exceptions is a subclass of BaseException or a tuple of  subclasses of BaseException
+        """
+        if exceptions is None:
+            return True
+        else:
+            try:
+                if isinstance(exceptions, tuple) and all(issubclass(item, BaseException) for item in exceptions):
+                    return True
+                elif issubclass(exceptions, BaseException):
+                    return True
+                else:
+                    return False
+            except:
+                return False
             
     @staticmethod
     def _num_tokens_from_messages(
