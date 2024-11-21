@@ -8,10 +8,10 @@
 # by CVS Health to include functionality for computing
 # prompt and response token counts for OpenAI models.
 
+import asyncio
 import itertools
-import time
 import warnings
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import nltk
 import sacremoses
@@ -56,8 +56,8 @@ class CounterfactualGenerator(ResponseGenerator):
     def __init__(
         self,
         langchain_llm: Any = None,
+        suppressed_exceptions: Optional[Union[Tuple[BaseException], BaseException]] = None,
         max_calls_per_min: Optional[int] = None,
-        suppressed_exceptions: Optional[Tuple] = None
     ) -> None:
         """
         Class for parsing and replacing protected attribute words.
@@ -70,17 +70,18 @@ class CounterfactualGenerator(ResponseGenerator):
             A langchain llm object to get passed to chain constructor. User is responsible for specifying
             temperature and other relevant parameters to the constructor of their `langchain_llm` object.
 
-        max_calls_per_min : int, default=None
-            Specifies how many api calls to make per minute to avoid a rate limit error. By default, no
-            limit is specified.
-            
         suppressed_exceptions : tuple, default=None
-            Specifies which exceptions to handle as 'Unable to get response' rather than raising the 
+            Specifies which exceptions to handle as 'Unable to get response' rather than raising the
             exception
-        """
-        super().__init__(langchain_llm, max_calls_per_min, suppressed_exceptions)
-        # Create class attributes
 
+        max_calls_per_min : int, default=None
+            [Deprecated] Use LangChain's InMemoryRateLimiter instead.
+        """
+        super().__init__(
+            langchain_llm=langchain_llm,
+            suppressed_exceptions=suppressed_exceptions,
+            max_calls_per_min=max_calls_per_min,
+        )
         self.attribute_to_word_lists = {
             "race": ALL_RACE_WORDS,
             "gender": ALL_GENDER_WORDS,
@@ -189,10 +190,10 @@ class CounterfactualGenerator(ResponseGenerator):
             attribute words in provided text
         """
         assert not (custom_list and attribute), """
-        langfair: Either custom_list or attribute must be None.
+        Either custom_list or attribute must be None.
         """
         assert custom_list or attribute in ["race", "gender"], """
-        langfair: If custom_list is None, attribute must be 'race' or 'gender'.
+        If custom_list is None, attribute must be 'race' or 'gender'.
         """
         result = []
         for text in texts:
@@ -232,12 +233,12 @@ class CounterfactualGenerator(ResponseGenerator):
             Dictionary containing counterfactual prompts
         """
         assert not (custom_dict and attribute), """
-        langfair: Either custom_dict or attribute must be None.
+        Either custom_dict or attribute must be None.
         """
         assert custom_dict or attribute in [
             "gender",
             "race",
-        ], "langfair: If custom_dict is None, attribute must be 'gender' or 'race'."
+        ], "If custom_dict is None, attribute must be 'gender' or 'race'."
 
         custom_list = (
             list(itertools.chain(*custom_dict.values())) if custom_dict else None
@@ -356,8 +357,8 @@ class CounterfactualGenerator(ResponseGenerator):
         if self.llm.temperature == 0:
             assert (
                 count == 1
-            ), "langfair: temperature must be greater than 0 if count > 1"
-        self._update_count(count)
+            ), "temperature must be greater than 0 if count > 1"
+        self.count = count
 
         # create counterfactual prompts
         groups = self.group_mapping[attribute] if attribute else custom_dict.keys()
@@ -373,29 +374,17 @@ class CounterfactualGenerator(ResponseGenerator):
 
         # generate responses with async
         responses_dict, duplicated_prompts_dict = {}, {}
-        chain = self._setup_langchain(system_message=system_prompt)
+        chain = self._setup_langchain(system_prompt=system_prompt)
         for group in groups:
             prompt_key = group + "_prompt"
-            start = time.time()
+            # start = time.time()
             # generate with async
             (
-                generations,
+                tasks,
                 duplicated_prompts_dict[prompt_key],
-            ) = await self._generate_in_batches(
-                chain=chain, prompts=prompts_dict[prompt_key]
-            )
-            responses = []
-            for response in generations:
-                responses.extend(response)
-            responses_dict[group + "_response"] = responses
-            stop = time.time()
-
-            if (stop - start < 60) and (
-                (self.max_calls_per_min <= len(responses))
-                if self.max_calls_per_min
-                else False
-            ):
-                time.sleep(61 - stop + start)
+            ) = self._create_tasks(chain=chain, prompts=prompts_dict[prompt_key])
+            responses_dict[group + "_response"] = await asyncio.gather(*tasks)
+            # stop = time.time()
 
         non_completion_rate = len(
             [
@@ -405,7 +394,7 @@ class CounterfactualGenerator(ResponseGenerator):
             ]
         ) / len(list(responses_dict.values())[0])
 
-        print("langfair: Responses successfully generated!")
+        print("Responses successfully generated!")
         return {
             "data": {
                 **duplicated_prompts_dict,
@@ -429,7 +418,7 @@ class CounterfactualGenerator(ResponseGenerator):
         custom_list: Optional[List[str]] = None,
     ) -> Tuple[List[str], List[List[str]]]:
         """Subset prompts that contain protected attribute words"""
-        attribute_to_print = attribute if attribute else "protected attribute"
+        attribute_to_print = "Protected attribute" if not attribute else attribute.capitalize()
         attribute_words = self.parse_texts(
             texts=prompts, attribute=attribute, custom_list=custom_list
         )
@@ -437,10 +426,10 @@ class CounterfactualGenerator(ResponseGenerator):
             prompt for i, prompt in enumerate(prompts) if attribute_words[i]
         ]
         assert len(prompts_subset) > 0, f"""
-        langfair: Provided prompts do not contain any {attribute_to_print} words.
+        Provided prompts do not contain any {attribute_to_print} words.
         """
         print(
-            f"langfair: {attribute_to_print} words found in {len(prompts_subset)} prompts."
+            f"{attribute_to_print} words found in {len(prompts_subset)} prompts."
         )
         return prompts_subset, attribute_words
 

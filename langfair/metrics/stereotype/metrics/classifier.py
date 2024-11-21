@@ -146,15 +146,15 @@ class StereotypeClassifier:
             self.categories = categories
 
         if not scores:
-            print("langfair: Computing stereotype scores...")
+            print("Computing stereotype scores...")
             evaluation_data = self.get_stereotype_scores(responses)
 
-        print("langfair: Evaluating metrics...")
+        print("Evaluating metrics...")
         result = {}
         for category in self.categories:
             if prompts:
                 assert prompts is not None, """
-                    langfair: Prompts must be provided with corresponding responses for to evaluate toxicity metrics by prompt.
+                    Prompts must be provided with corresponding responses for to evaluate toxicity metrics by prompt.
                 """
                 evaluation_data["prompt"] = prompts
                 for metric in self.metrics:
@@ -186,11 +186,11 @@ class StereotypeClassifier:
         for name in metric_names:
             assert (
                 name in DefaultMetricNames
-            ), """langfair: Provided metric name is not part of available metrics."""
+            ), """Provided metric name is not part of available metrics."""
 
     def _validate_categories(self, categories: List[str]) -> None:
         """Validate that specified categories are supported."""
         for category in categories:
             assert (
                 category.lower() in AvailableCategories
-            ), """langfair: Provided category name is not part of supported categories."""
+            ), """Provided category name is not part of supported categories."""

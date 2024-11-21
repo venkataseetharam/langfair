@@ -52,7 +52,7 @@ class ClassificationMetrics:
             A list containing name or class object of metrics.
         """
         assert metric_type in ["all", "assistive", "punitive", "representation"], """
-        langfair: metric type must be one of 'all', 'assistive', 'punitive', 'representation'
+        metric type must be one of 'all', 'assistive', 'punitive', 'representation'
         """
         self.metric_type = metric_type
         self._create_instances()

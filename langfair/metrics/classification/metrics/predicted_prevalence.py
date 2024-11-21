@@ -51,7 +51,7 @@ class PredictedPrevalenceRateParity(Metric):
 
         ratio : bool, default=False
             Indicates whether to compute the metric as a difference or a ratio
-            
+
         Returns
         -------
         float
@@ -60,12 +60,12 @@ class PredictedPrevalenceRateParity(Metric):
         unique_preds = np.unique(y_pred)
         assert np.array_equal(
             unique_preds, [0, 1]
-        ), "langfair: y_pred must contain exactly two unique values: 0 and 1"
+        ), "y_pred must contain exactly two unique values: 0 and 1"
 
         unique_groups = np.unique(groups)
         assert (
             len(unique_groups) == 2
-        ), "langfair: groups must contain exactly two unique values"
+        ), "groups must contain exactly two unique values"
 
         ppr1 = np.mean(y_pred[groups == unique_groups[0]])
         ppr2 = np.mean(y_pred[groups == unique_groups[1]])

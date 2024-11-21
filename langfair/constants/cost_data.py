@@ -35,3 +35,6 @@ COST_MAPPING = {
     "gpt-4-turbo": {"input": 0.00001, "output": 0.00003},
     "gpt-4-turbo-2024-04-09": {"input": 0.00001, "output": 0.00003},
 }
+FAILURE_MESSAGE = "Unable to get response"
+TOKEN_COST_DATE = "10/21/2024"
+

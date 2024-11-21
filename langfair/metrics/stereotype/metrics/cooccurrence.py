@@ -69,7 +69,7 @@ class CooccurrenceBiasMetric:
             co-occurrence bias score.
 
         how : str, default='mean'
-            If defined as 'mean', evaluate method returns average COBS score. If 'word_level', the 
+            If defined as 'mean', evaluate method returns average COBS score. If 'word_level', the
             method returns dictinary with COBS(w) for each word 'w'.
         """
         # Specify whether target words should be adjectives or professions
@@ -77,7 +77,7 @@ class CooccurrenceBiasMetric:
             assert isinstance(stereotype_word_list, list) and all(
                 isinstance(elem, str) for elem in stereotype_word_list
             ), """
-                langfair: If provided, `stereotype_word_list` must be list of strings
+                If provided, `stereotype_word_list` must be list of strings
             """
             self.target_word_list = stereotype_word_list
         else:
@@ -92,7 +92,7 @@ class CooccurrenceBiasMetric:
             self.group2_nouns = set(self.demographic_group_word_lists["male"])
         else:
             assert len(demographic_group_word_lists.keys()) == 2, """
-                `langfair: demographic_group_word_lists` must be a dictionary with exactly two keys
+                `demographic_group_word_lists` must be a dictionary with exactly two keys
             """
 
             for key in demographic_group_word_lists.keys():
@@ -100,7 +100,7 @@ class CooccurrenceBiasMetric:
                 assert isinstance(val, list) and all(
                     isinstance(elem, str) for elem in val
                 ), """
-                    langfair: values in `demographic_group_word_lists` must be lists of strings
+                    values in `demographic_group_word_lists` must be lists of strings
                 """
             self.demographic_group_word_lists = demographic_group_word_lists
             self.group1_nouns, self.group2_nouns = map(
@@ -166,7 +166,7 @@ class CooccurrenceBiasMetric:
         cobs_scores_list = [float(s) for s in cobs_scores.values() if s is not None]
         if len(cobs_scores_list) == 0:
             print(
-                "langfair: None of the target words co-occur with both lists of attribute words. Unable to calculate COBS score."
+                "None of the target words co-occur with both lists of attribute words. Unable to calculate COBS score."
             )
             return None
 
@@ -201,7 +201,7 @@ class CooccurrenceBiasMetric:
             and (len(attribute_word_lists["group2"]) > 0)
         ):
             print(
-                "langfair: The provided sentences do not contain words from both word lists. Unable to calculate Co-occurrence bias score."
+                "The provided sentences do not contain words from both word lists. Unable to calculate Co-occurrence bias score."
             )
             return None, None, None, None, None
         tot_co_counts = {}
