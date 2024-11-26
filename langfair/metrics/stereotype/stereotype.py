@@ -35,7 +35,7 @@ class StereotypeMetrics:
     def __init__(self, metrics: MetricType = DefaultMetricNames) -> None:
         """
         This class computes few or all Stereotype metrics supported langfair. For more information on these metrics, see Liang et al. (2023) :footcite:`liang2023holisticevaluationlanguagemodels`,
-        Bordia et al. (2019) :footcite:`bordia2019identifyingreducinggenderbias` and Zekun et al. (2023) :footcite:`zekun2023auditinglargelanguagemodels`.
+        Bordia & Bowman (2019) :footcite:`bordia2019identifyingreducinggenderbias` and Zekun et al. (2023) :footcite:`zekun2023auditinglargelanguagemodels`.
 
         Parameters
         ----------

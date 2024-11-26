@@ -37,7 +37,7 @@ class CounterfactualMetrics:
     ) -> None:
         """
         This class computes few or all counterfactual metrics supported LangFair. For more information on these metrics,
-        see Huang et al. (2020) :footcite:`huang2020reducingsentimentbiaslanguage` and Bouchard et al. (2024) :footcite:`bouchard2024actionableframeworkassessingbias`.
+        see Huang et al. (2020) :footcite:`huang2020reducingsentimentbiaslanguage` and Bouchard (2024) :footcite:`bouchard2024actionableframeworkassessingbias`.
 
         Parameters
         ----------

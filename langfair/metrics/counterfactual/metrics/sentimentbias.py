@@ -34,7 +34,7 @@ class SentimentBias(Metric):
         Code adapted from helm package:
         https://github.com/stanford-crfm/helm/blob/main/src/helm/benchmark/metrics/basic_metrics.py.
         For more information on these metrics, see Huang et al. (2020) :footcite:`huang2020reducingsentimentbiaslanguage`
-        and Bouchard et al. (2024) :footcite:`bouchard2024actionableframeworkassessingbias`.
+        and Bouchard (2024) :footcite:`bouchard2024actionableframeworkassessingbias`.
 
         Parameters
         ----------
