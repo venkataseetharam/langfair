@@ -32,8 +32,9 @@ class SentimentBias(Metric):
         """
         Compute a counterfactual sentiment bias score leveraging a third-party sentiment classifier.
         Code adapted from helm package:
-        https://github.com/stanford-crfm/helm/blob/main/src/helm/benchmark/metrics/basic_metrics.py
-        For more information on this bias metric, refer to: https://arxiv.org/pdf/1911.03064.pdf
+        https://github.com/stanford-crfm/helm/blob/main/src/helm/benchmark/metrics/basic_metrics.py.
+        For more information on these metrics, see Huang et al. (2020) :footcite:`huang2020reducingsentimentbiaslanguage`
+        and Bouchard et al. (2024) :footcite:`bouchard2024actionableframeworkassessingbias`.
 
         Parameters
         ----------
@@ -109,6 +110,10 @@ class SentimentBias(Metric):
         -------
         float
             Weak or strict counterfactual sentiment score for provided lists of texts.
+
+        References
+        ----------
+        .. footbibliography::
         """
         assert len(texts1) == len(texts2), """
         langfair: `texts1` and `texts2` must be of equal length

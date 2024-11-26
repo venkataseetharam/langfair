@@ -22,7 +22,8 @@ class FalseDiscoveryRateParity(Metric):
     def __init__(self) -> None:
         """
         This class computes false negative rate parity. The user may specify whether to compute this
-        metric as a difference or a ratio.
+        metric as a difference or a ratio. For more information on these metrics,
+        see Bellamy et al. (2018) :footcite:`bellamy2018aifairness360extensible` and Saleiro et al. (2019) :footcite:`saleiro2019aequitasbiasfairnessaudit`.
         """
         self.name = "FalseDiscoveryRateParity"
 
@@ -54,6 +55,10 @@ class FalseDiscoveryRateParity(Metric):
         -------
         float
             Value of false discovery rate parity
+
+        References
+        ----------
+        .. footbibliography::
         """
         unique_preds, unique_labels, unique_groups = (
             np.unique(y_pred),
@@ -66,9 +71,7 @@ class FalseDiscoveryRateParity(Metric):
         assert np.array_equal(
             unique_labels, [0, 1]
         ), "y_true must contain exactly two unique values: 0 and 1"
-        assert (
-            len(unique_groups) == 2
-        ), "groups must contain exactly two unique values"
+        assert len(unique_groups) == 2, "groups must contain exactly two unique values"
 
         cm1 = self.binary_confusion_matrix(
             y_true[groups == unique_groups[0]], y_pred[groups == unique_groups[0]]

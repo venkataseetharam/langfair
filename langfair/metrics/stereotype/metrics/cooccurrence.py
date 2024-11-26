@@ -48,7 +48,8 @@ class CooccurrenceBiasMetric:
         """
         Class for computing Co-occurrence bias score. Compute co-occurrence bias scores as defined by conditional probability ratios
         based on infinite context windows. Code is based on research by Bordia & Bowman (2019):
-        https://arxiv.org/abs/1904.03035
+        https://arxiv.org/abs/1904.03035. For more information on these metrics, see Bordia et al. (2019) :footcite:`bordia2019identifyingreducinggenderbias`.
+
         Parameters
         ----------
         target_category : {'adjective', 'profession'}, default = 'adjective'
@@ -127,6 +128,10 @@ class CooccurrenceBiasMetric:
         -------
         float
             Co-occurrence bias score metric
+
+        References
+        ----------
+        .. footbibliography::
         """
         # Conduct intermediate operations before COBS calculations
         tot_co_counts, tot_cooccur, reference_words, all_words, attribute_word_lists = (

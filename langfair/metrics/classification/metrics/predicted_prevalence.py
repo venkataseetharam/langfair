@@ -24,7 +24,7 @@ class PredictedPrevalenceRateParity(Metric):
     def __init__(self) -> None:
         """
         This class computes predicted prevalence rate parity. The user may specify whether to compute this
-        metric as a difference or a ratio.
+        metric as a difference or a ratio. For more information on these metrics, see Feldman et al. (2015) :footcite:`feldman2015certifyingremovingdisparateimpact`.
         """
         self.name = "PredictedPrevalenceRateParity"
 
@@ -56,6 +56,10 @@ class PredictedPrevalenceRateParity(Metric):
         -------
         float
             Value of predicted prevalence rate parity
+
+        References
+        ----------
+        .. footbibliography::
         """
         unique_preds = np.unique(y_pred)
         assert np.array_equal(
@@ -63,9 +67,7 @@ class PredictedPrevalenceRateParity(Metric):
         ), "y_pred must contain exactly two unique values: 0 and 1"
 
         unique_groups = np.unique(groups)
-        assert (
-            len(unique_groups) == 2
-        ), "groups must contain exactly two unique values"
+        assert len(unique_groups) == 2, "groups must contain exactly two unique values"
 
         ppr1 = np.mean(y_pred[groups == unique_groups[0]])
         ppr2 = np.mean(y_pred[groups == unique_groups[1]])
