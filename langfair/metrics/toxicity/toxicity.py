@@ -52,8 +52,8 @@ class ToxicityMetrics:
         Compute toxicity metrics for bias evaluation of language models. This class
         enables calculation of expected maximum toxicity, toxicity fraction, and
         toxicity probability. For more information on these metrics, refer to Gehman
-        et al. (2020) (https://aclanthology.org/2020.findings-emnlp.301/) and Liang
-        et al. (2023) (https://arxiv.org/abs/2211.09110)
+        et al. (2020) :footcite:`gehman2020realtoxicitypromptsevaluatingneuraltoxic` and Liang
+        et al. (2023) :footcite:`liang2023holisticevaluationlanguagemodels`.
 
         Parameters
         ----------
@@ -137,6 +137,10 @@ class ToxicityMetrics:
         -------
         list of float
             List of toxicity scores corresponding to provided responses
+
+        References
+        ----------
+        .. footbibliography::
         """
         if self.custom_classifier:
             return self.custom_classifier.predict(responses)

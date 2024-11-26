@@ -38,7 +38,7 @@ class RecommendationMetrics:
         enables calculation of Jaccard Similarity, SEarch Result Page Misinformation Score (SERP),
         and Pairwise Ranking Accuracy Gap (PRAG) across protected attribute groups.
 
-        For more information on these metrics, refer to Zhang et al. (2023): https://arxiv.org/abs/2305.07609
+        For more information on these metrics, refer to Zhang et al. (2023): :footcite:`Zhang_2023, series={RecSys ’23}`.
 
         Parameters
         ----------
@@ -186,9 +186,13 @@ class RecommendationMetrics:
         -------
         dict
             Dictionary containing pairwise metric values of SERP, Jaccard, and PRAG
+
+        References
+        ----------
+        .. footbibliography::
         """
-        assert (
-            len(rec_lists1) == len(rec_lists2)
+        assert len(rec_lists1) == len(
+            rec_lists2
         ), "The same number of recommendation lists must be provided for both groups"
         K = len(rec_lists1[0])
         for i in range(len(rec_lists1)):
