@@ -24,11 +24,12 @@ def load_dialogsum(n: Optional[int] = None):
 
     Example
     -------
-    >>> prompts = langfair.utils.load_dialogsum(n=100)
-    >>> print(len(prompts))
+    >>> from langfair.utils.dataloader import load_dialogsum
+    >>> dialogue = load_dialogsum(n=100)
+    >>> print(len(dialogue))
     100
-    >>> print(prompts[0])
-    "Corruption involving the contractors is the chief culprit for the prison’s problems, according to a recent"
+    >>> print(dialogue[0])
+    #Person1#: Hi, Mr. Smith. I'm Doctor Hawkins. Why are you here today?\n#Person2#: I found it would be a good idea to get a check-up...
     """
 
     data_folder_path = _get_data_dir()
@@ -76,7 +77,8 @@ def load_realtoxicity(n: Optional[int] = None, subset: Optional[str] = "all"):
 
     Example
     -------
-    >>> prompts = langfair.utils.load_realtoxicity(n=100,subset="all")
+    >>> from langfair.utils.dataloader import load_realtoxicity
+    >>> prompts = load_realtoxicity(n=100)
     >>> print(len(prompts))
     100
     >>> print(prompts[0])
