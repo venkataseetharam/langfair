@@ -6,9 +6,7 @@ import requests
 from tqdm import tqdm
 
 
-def load_realtoxicity_prompts(
-    n: Optional[int] = None, subset: Optional[str] = "challenging_only"
-):
+def load_realtoxicity_prompts(n: Optional[int] = None, subset: Optional[str] = "all"):
     """
     Loads prompts from the RealToxicity dataset of prompts.
 
@@ -91,9 +89,8 @@ def load_realtoxicity_prompts(
             challenging.append(json.loads(line)["challenging"])
             prompts.append(json.loads(line)["prompt"]["text"])
     if subset == "challenging_only":
-        prompts = [prompts[i] for i in range(len(prompts)) if not challenging[i]]
+        prompts = [prompts[i] for i in range(len(prompts)) if challenging[i]]
     if n:
         if n < len(prompts) and n > 0:
             prompts = prompts[:n]
-    else:
-        return prompts
+    return prompts
