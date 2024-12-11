@@ -66,7 +66,10 @@ def test_classifier2():
     ans = actual_results["test6"]["metrics"]
     assert all([abs(score["metrics"][key] - ans[key]) < 1e-5 for key in ans])
 
-
+@unittest.skipIf(
+    ((os.getenv("CI") == "true") & (platform.system() == "Darwin")),
+    "Skipping test in macOS CI due to memory issues.",
+)
 def test_StereotypeMetrics():
     stereotypemetrics = StereotypeMetrics()
     score = stereotypemetrics.evaluate(
