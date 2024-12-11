@@ -89,7 +89,7 @@ stereo_result['metrics']
 ```
 
 ##### Generate counterfactual responses and compute metrics
-We can generate counterfactual metrics with `CounterfactualGenerator`.
+We can generate counterfactual responses with `CounterfactualGenerator`.
 ```python
 from langfair.generator.counterfactual import CounterfactualGenerator
 cg = CounterfactualGenerator(langchain_llm=llm)
@@ -142,11 +142,6 @@ results
 #    'Bleu Similarity': 0.13248873839336991,
 #    'Sentiment Bias': 0.0114}}}
 ```
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/cvs-health/langfair/main/assets/images/autoeval_process.png" />
-</p>
-
 
 ## 📚 Example Notebooks
 Explore the following demo notebooks to see how to use LangFair for various bias and fairness evaluation metrics:
