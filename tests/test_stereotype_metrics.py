@@ -1,6 +1,8 @@
 import json
 
 import numpy as np
+import platform
+import unittest
 
 from langfair.metrics.stereotype import StereotypeMetrics
 from langfair.metrics.stereotype.metrics import (
@@ -41,14 +43,20 @@ def test_coocurrence2():
     x = cobs.evaluate(responses=data["responses_profession"])
     np.testing.assert_almost_equal(x, actual_results["test4"], 5)
 
-
+@unittest.skipIf(
+    ((os.getenv("CI") == "true") & (platform.system() == "Darwin")),
+    "Skipping test in macOS CI due to memory issues.",
+)
 def test_classifier1():
     classifier = StereotypeClassifier(metrics=["Stereotype Fraction"])
     x = classifier.evaluate(responses=data["responses_fraction"], return_data=True)
     assert x["metrics"] == actual_results["test5"]["metrics"]
     assert x["data"]["response"] == data["responses_fraction"]
 
-
+@unittest.skipIf(
+    ((os.getenv("CI") == "true") & (platform.system() == "Darwin")),
+    "Skipping test in macOS CI due to memory issues.",
+)
 def test_classifier2():
     classifier = StereotypeClassifier()
     score = classifier.evaluate(
