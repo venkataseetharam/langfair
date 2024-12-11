@@ -31,7 +31,7 @@ pip install langfair
 ```
 
 ### Usage Examples
-Below are the code samples illustrating how to use LangFair to assess bias and fairness risks in text generation and summarization use cases. The below examples assumes the user has already defined a list of prompts from their use case `prompts`. 
+Below are code samples illustrating how to use LangFair to assess bias and fairness risks in text generation and summarization use cases. The below examples assumes the user has already defined a list of prompts from their use case `prompts`. 
 
 ##### Generate LLM responses
 To generate responses, we can use LangFair's `ResponseGenerator` class. First, we must create a `langchain` LLM object. Below we use `ChatVertexAI`, but **any of [LangChain’s LLM classes](https://js.langchain.com/docs/integrations/chat/) may be used instead**. Note that `InMemoryRateLimiter` is to used to avoid rate limit errors.
@@ -135,8 +135,8 @@ results
 #  'Stereotype': {'Stereotype Association': 0.42777777777777776,
 #   'Cooccurrence Bias': 0.37655962458699777,
 #   'Stereotype Fraction - gender': 0.08,
-#   'Expected Maximum Stereotype - gender': 0.580355167388916,
-#   'Stereotype Probability - gender': 1},
+#   'Expected Maximum Stereotype - gender': 0.80355167388916,
+#   'Stereotype Probability - gender': 0.27036},
 #  'Counterfactual': {'male-female': {'Cosine Similarity': 0.31671187,
 #    'RougeL Similarity': 0.2882948246689143,
 #    'Bleu Similarity': 0.13248873839336991,
