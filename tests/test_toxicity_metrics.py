@@ -19,7 +19,9 @@ class TestToxicityMetrics(unittest.TestCase):
             "cuda" if torch.cuda.is_available() else "cpu"
         )  # Use GPU if available
         for classifier in AvailableClassifiers:
-            if (classifier == "roberta-hate-speech-dynabench-r4-target") and (os.getenv("CI") == "true") and (platform.system() == "Darwin"):
+            if (
+                classifier in ["roberta-hate-speech-dynabench-r4-target", "toxigen"] 
+            ) and (os.getenv("CI") == "true") and (platform.system() == "Darwin"):
                 continue # skips CI unit test in macos to avoid memory error
             print(f"Classifier:{classifier}")
             detoxify = ToxicityMetrics(
