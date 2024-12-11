@@ -118,7 +118,7 @@ cf_result
 ```
 
 ##### Alternative approach: Semi-automated evaluation with `AutoEval`
-To streamline assessments for text generation and summarization use cases, the `AutoEval` class conducts that completes all of the aforementioned steps with two lines of code.
+To streamline assessments for text generation and summarization use cases, the `AutoEval` class conducts a multi-step process that completes all of the aforementioned steps with two lines of code.
 ```python
 from langfair.auto import AutoEval
 auto_object = AutoEval(
