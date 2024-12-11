@@ -30,50 +30,118 @@ The latest version can be installed from PyPI:
 pip install langfair
 ```
 
-### Usage Example
-Below is a sample of code illustrating how to use LangFair's `AutoEval` class for text generation and summarization use cases. The below example assumes the user has already defined parameters `DEPLOYMENT_NAME`, `API_KEY`, `API_BASE`, `API_TYPE`, `API_VERSION`, and a list of prompts from their use case `prompts`. 
+### Usage Examples
+Below are the code samples illustrating how to use LangFair to assess bias and fairness risks in text generation and summarization use cases. The below examples assumes the user has already defined a list of prompts from their use case `prompts`. 
 
-Create `langchain` LLM object. Any of LangChain’s LLM classes may be used in place of `AzureChatOpenAI`.
+##### Generate LLM responses
+To generate responses, we can use LangFair's `ResponseGenerator` class. First, we must create a `langchain` LLM object. Below we use `ChatVertexAI`, but **any of [LangChain’s LLM classes](https://js.langchain.com/docs/integrations/chat/) may be used instead**. Note that `InMemoryRateLimiter` is to used to avoid rate limit errors.
 ```python
-from langchain_openai import AzureChatOpenAI
-# import torch # uncomment if GPU is available
-# device = torch.device("cuda") # uncomment if GPU is available
-
-llm = AzureChatOpenAI(
-    deployment_name=DEPLOYMENT_NAME,
-    openai_api_key=API_KEY,
-    azure_endpoint=API_BASE,
-    openai_api_type=API_TYPE,
-    openai_api_version=API_VERSION,
-    temperature=0.4 # User to set temperature
+from langchain_google_vertexai import ChatVertexAI
+from langchain_core.rate_limiters import InMemoryRateLimiter
+rate_limiter = InMemoryRateLimiter(
+    requests_per_second=4.5, check_every_n_seconds=0.5, max_bucket_size=280,  
+)
+llm = ChatVertexAI(
+    model_name="gemini-pro", temperature=0.3, rate_limiter=rate_limiter
 )
 ```
+We can use `ResponseGenerator.generate_responses` to generate 25 responses for each prompt, as is convention for toxicity evaluation.
+```python
+from langfair.generator import ResponseGenerator
+rg = ResponseGenerator(langchain_llm=llm)
+generations = await rg.generate_responses(prompts=prompts, count=25)
+responses = [str(r) for r in generations["data"]["response"]]
+duplicated_prompts = [str(r) for r in generations["data"]["prompt"]] # so prompts correspond to responses
+```
 
-Run the `AutoEval` method for automated bias / fairness evaluation
+##### Compute toxicity metrics
+Toxicity metrics can be computed with `ToxicityMetrics`. Note that use of `torch.device` is optional and should be used if GPU is available to speed up toxicity computation.
+```python
+# import torch # uncomment if GPU is available
+# device = torch.device("cuda") # uncomment if GPU is available
+from langfair.metrics.toxicity import ToxicityMetrics
+tm = ToxicityMetrics(
+    # device=device, # uncomment if GPU is available,
+)
+tox_result = tm.evaluate(
+    prompts=duplicated_prompts, 
+    responses=responses, 
+    return_data=True
+)
+tox_result['metrics']
+# # Output is below
+# {'Toxic Fraction': 0.0004,
+# 'Expected Maximum Toxicity': 0.013845130120171235,
+# 'Toxicity Probability': 0.01}
+```
+
+##### Compute stereotype metrics
+Stereotype metrics can be computed with `StereotypeMetrics`.
+```python
+from langfair.metrics.stereotype import StereotypeMetrics
+sm = StereotypeMetrics()
+stereo_result = sm.evaluate(responses=responses, categories=["gender"])
+stereo_result['metrics']
+# # Output is below
+# {'Stereotype Association': 0.3172750176745329,
+# 'Cooccurrence Bias': 0.44766333654278373,
+# 'Stereotype Fraction - gender': 0.15452}
+```
+
+##### Generate counterfactual responses and compute metrics
+We can generate counterfactual responses with `CounterfactualGenerator`.
+```python
+from langfair.generator.counterfactual import CounterfactualGenerator
+cg = CounterfactualGenerator(langchain_llm=llm)
+cf_generations = await cg.generate_responses(
+    prompts=prompts, attribute='gender', count=25
+)
+male_responses = [str(r) for r in cf_generations['data']['male_response']]
+female_responses = [str(r) for r in cf_generations['data']['female_response']]
+```
+
+Counterfactual metrics can be easily computed with `CounterfactualMetrics`.
+```python
+from langfair.metrics.counterfactual import CounterfactualMetrics
+cm = CounterfactualMetrics()
+cf_result = cm.evaluate(
+    texts1=male_responses, 
+    texts2=female_responses,
+    attribute='gender'
+)
+cf_result
+# # Output is below
+# {'Cosine Similarity': 0.8318708,
+# 'RougeL Similarity': 0.5195852482361165,
+# 'Bleu Similarity': 0.3278433712872481,
+# 'Sentiment Bias': 0.0009947145187601957}
+```
+
+##### Alternative approach: Semi-automated evaluation with `AutoEval`
+To streamline assessments for text generation and summarization use cases, the `AutoEval` class conducts that completes all of the aforementioned steps with two lines of code.
 ```python
 from langfair.auto import AutoEval
 auto_object = AutoEval(
     prompts=prompts, 
-    langchain_llm=llm
+    langchain_llm=llm,
     # toxicity_device=device # uncomment if GPU is available
 )
 results = await auto_object.evaluate()
+results
+# Output is below
+# {'Toxicity': {'Toxic Fraction': 0.0,
+#   'Expected Maximum Toxicity': 0.08870933699654415,
+#   'Toxicity Probability': 0},
+#  'Stereotype': {'Stereotype Association': 0.42777777777777776,
+#   'Cooccurrence Bias': 0.37655962458699777,
+#   'Stereotype Fraction - gender': 0.08,
+#   'Expected Maximum Stereotype - gender': 0.580355167388916,
+#   'Stereotype Probability - gender': 1},
+#  'Counterfactual': {'male-female': {'Cosine Similarity': 0.31671187,
+#    'RougeL Similarity': 0.2882948246689143,
+#    'Bleu Similarity': 0.13248873839336991,
+#    'Sentiment Bias': 0.0114}}}
 ```
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/cvs-health/langfair/main/assets/images/autoeval_process.png" />
-</p>
-
-
-Print the results and export to .txt file.
-```python
-auto_object.export_results(file_name="metric_values.txt")
-auto_object.print_results()
-```
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/cvs-health/langfair/main/assets/images/autoeval_output.png" />
-</p>
 
 ## 📚 Example Notebooks
 Explore the following demo notebooks to see how to use LangFair for various bias and fairness evaluation metrics:
