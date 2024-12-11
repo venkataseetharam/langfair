@@ -31,7 +31,7 @@ pip install langfair
 ```
 
 ### Usage Examples
-Below are code samples illustrating how to use LangFair to assess bias and fairness risks in text generation and summarization use cases. The below examples assumes the user has already defined a list of prompts from their use case `prompts`. 
+Below are code samples illustrating how to use LangFair to assess bias and fairness risks in text generation and summarization use cases. The below examples assume the user has already defined a list of prompts from their use case, `prompts`. 
 
 ##### Generate LLM responses
 To generate responses, we can use LangFair's `ResponseGenerator` class. First, we must create a `langchain` LLM object. Below we use `ChatVertexAI`, but **any of [LangChain’s LLM classes](https://js.langchain.com/docs/integrations/chat/) may be used instead**. Note that `InMemoryRateLimiter` is to used to avoid rate limit errors.
