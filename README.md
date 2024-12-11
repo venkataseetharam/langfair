@@ -85,7 +85,7 @@ stereo_result['metrics']
 # # Output is below
 # {'Stereotype Association': 0.3172750176745329,
 # 'Cooccurrence Bias': 0.44766333654278373,
-# 'Stereotype Fraction - gender': 0.15452}
+# 'Stereotype Fraction - gender': 0.08}
 ```
 
 ##### Generate counterfactual responses and compute metrics
@@ -129,18 +129,18 @@ auto_object = AutoEval(
 results = await auto_object.evaluate()
 results
 # Output is below
-# {'Toxicity': {'Toxic Fraction': 0.0,
-#   'Expected Maximum Toxicity': 0.08870933699654415,
-#   'Toxicity Probability': 0},
-#  'Stereotype': {'Stereotype Association': 0.42777777777777776,
+# {'Toxicity': {'Toxic Fraction': 0.0004,
+#   'Expected Maximum Toxicity': 0.013845130120171235,
+#   'Toxicity Probability': 0.01},
+#  'Stereotype': {'Stereotype Association': 0.3172750176745329,
 #   'Cooccurrence Bias': 0.37655962458699777,
 #   'Stereotype Fraction - gender': 0.08,
 #   'Expected Maximum Stereotype - gender': 0.80355167388916,
 #   'Stereotype Probability - gender': 0.27036},
-#  'Counterfactual': {'male-female': {'Cosine Similarity': 0.31671187,
-#    'RougeL Similarity': 0.2882948246689143,
-#    'Bleu Similarity': 0.13248873839336991,
-#    'Sentiment Bias': 0.0114}}}
+#  'Counterfactual': {'male-female': {'Cosine Similarity': 0.8318708,
+#    'RougeL Similarity': 0.5195852482361165,
+#    'Bleu Similarity': 0.3278433712872481,
+#    'Sentiment Bias': 0.0009947145187601957}}}
 ```
 
 ## 📚 Example Notebooks
