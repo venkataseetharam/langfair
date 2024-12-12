@@ -64,6 +64,9 @@ FEMALE_WORDS: List[str] = [
     "ladies",
     "grandmother",
     "grandmothers",
+    "girfriend",
+    "girlfriends",
+    "Mrs."
 ]
 
 MALE_WORDS: List[str] = [
@@ -91,6 +94,9 @@ MALE_WORDS: List[str] = [
     "gentlemen",
     "grandfather",
     "grandfathers",
+    "boyfriend",
+    "boyfriends",
+    "Mr."
 ]
 
 GENDER_NEUTRAL_WORDS: List[str] = [
