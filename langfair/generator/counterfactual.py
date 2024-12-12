@@ -383,7 +383,8 @@ class CounterfactualGenerator(ResponseGenerator):
                 tasks,
                 duplicated_prompts_dict[prompt_key],
             ) = self._create_tasks(chain=chain, prompts=prompts_dict[prompt_key])
-            responses_dict[group + "_response"] = await asyncio.gather(*tasks)
+            tmp_responses = await asyncio.gather(*tasks)
+            responses_dict[group + "_response"] = [str(r) for r in tmp_responses]
             # stop = time.time()
 
         non_completion_rate = len(

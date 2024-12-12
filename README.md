@@ -50,8 +50,8 @@ We can use `ResponseGenerator.generate_responses` to generate 25 responses for e
 from langfair.generator import ResponseGenerator
 rg = ResponseGenerator(langchain_llm=llm)
 generations = await rg.generate_responses(prompts=prompts, count=25)
-responses = [str(r) for r in generations["data"]["response"]]
-duplicated_prompts = [str(r) for r in generations["data"]["prompt"]] # so prompts correspond to responses
+responses = generations["data"]["response"]
+duplicated_prompts = generations["data"]["prompt"] # so prompts correspond to responses
 ```
 
 ##### Compute toxicity metrics
@@ -96,8 +96,8 @@ cg = CounterfactualGenerator(langchain_llm=llm)
 cf_generations = await cg.generate_responses(
     prompts=prompts, attribute='gender', count=25
 )
-male_responses = [str(r) for r in cf_generations['data']['male_response']]
-female_responses = [str(r) for r in cf_generations['data']['female_response']]
+male_responses = cf_generations['data']['male_response']
+female_responses = cf_generations['data']['female_response']
 ```
 
 Counterfactual metrics can be easily computed with `CounterfactualMetrics`.

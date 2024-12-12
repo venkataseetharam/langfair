@@ -235,7 +235,7 @@ class ResponseGenerator:
         return {
             "data": {
                 "prompt": duplicated_prompts,
-                "response": responses,
+                "response": [str(r) for r in responses],
             },
             "metadata": {
                 "non_completion_rate": non_completion_rate,
