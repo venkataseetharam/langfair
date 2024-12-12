@@ -234,8 +234,8 @@ class ResponseGenerator:
         print("Responses successfully generated!")
         return {
             "data": {
-                "prompt": duplicated_prompts,
-                "response": [str(r) for r in responses],
+                "prompt": self._enforce_strings(duplicated_prompts),
+                "response": self._enforce_strings(responses),
             },
             "metadata": {
                 "non_completion_rate": non_completion_rate,
@@ -300,6 +300,11 @@ class ResponseGenerator:
                     return False
             except:
                 return False
+            
+    @staticmethod
+    def _enforce_strings(texts: List[Any]) -> List[str]:
+        """Enforce that all outputs are strings"""
+        return [str(r) for r in texts]
             
     @staticmethod
     def _num_tokens_from_messages(
