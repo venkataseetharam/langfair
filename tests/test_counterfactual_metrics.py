@@ -66,9 +66,10 @@ def test_CounterfactualMetrics():
         "Sentiment Bias",
     ]
     counterfactualmetrics = CounterfactualMetrics(metrics=metrics)
-    score = counterfactualmetrics.evaluate(
+    result = counterfactualmetrics.evaluate(
         data["text1"], data["text2"], attribute="race"
     )
+    score = result['metrics']
     ans = actual_results["test6"]
     assert all(
         [abs(score[key] - ans[key]) < 1e-5 for key in ans if key != "Cosine Similarity"]
