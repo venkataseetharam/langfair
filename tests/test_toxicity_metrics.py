@@ -20,9 +20,11 @@ class TestToxicityMetrics(unittest.TestCase):
         )  # Use GPU if available
         for classifier in AvailableClassifiers:
             if (
-                classifier in ["roberta-hate-speech-dynabench-r4-target", "toxigen"] 
-            ) and (os.getenv("CI") == "true") and (platform.system() == "Darwin"):
-                continue # skips CI unit test in macos to avoid memory error
+                (classifier in ["roberta-hate-speech-dynabench-r4-target", "toxigen"])
+                and (os.getenv("CI") == "true")
+                and (platform.system() == "Darwin")
+            ):
+                continue  # skips CI unit test in macos to avoid memory error
             print(f"Classifier:{classifier}")
             detoxify = ToxicityMetrics(
                 classifiers=[classifier],

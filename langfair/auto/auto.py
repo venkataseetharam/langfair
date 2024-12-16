@@ -152,7 +152,9 @@ class AutoEval:
                 self.counterfactual_response_metadata = {}
                 for attribute in protected_words.keys():
                     if protected_words[attribute] > 0:
-                        self.counterfactual_responses[attribute] = await self.cf_generator_object.generate_responses(
+                        self.counterfactual_responses[
+                            attribute
+                        ] = await self.cf_generator_object.generate_responses(
                             prompts=self.prompts, attribute=attribute
                         )
         else:
@@ -219,17 +221,28 @@ class AutoEval:
                     for group1, group2 in combinations(
                         Protected_Attributes[attribute], 2
                     ):
-                        group1_response = self.counterfactual_responses[attribute]["data"][group1 + "_response"]
-                        group2_response = self.counterfactual_responses[attribute]["data"][group2 + "_response"]
+                        group1_response = self.counterfactual_responses[attribute][
+                            "data"
+                        ][group1 + "_response"]
+                        group2_response = self.counterfactual_responses[attribute][
+                            "data"
+                        ][group2 + "_response"]
                         fm = self.cf_generator_object.failure_message
-                        successful_response_index = [i 
-                                                     for i in range(len(group1_response)) 
-                                                     if group1_response[i] != fm and group2_response[i] != fm
-                                                    ]
+                        successful_response_index = [
+                            i
+                            for i in range(len(group1_response))
+                            if group1_response[i] != fm and group2_response[i] != fm
+                        ]
                         cf_results[f"{group1}-{group2}"] = (
                             counterfactual_object.evaluate(
-                                texts1=[group1_response[i] for i in successful_response_index],
-                                texts2=[group2_response[i] for i in successful_response_index],
+                                texts1=[
+                                    group1_response[i]
+                                    for i in successful_response_index
+                                ],
+                                texts2=[
+                                    group2_response[i]
+                                    for i in successful_response_index
+                                ],
                                 attribute=attribute,
                             )
                         )
