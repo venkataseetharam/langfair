@@ -109,7 +109,7 @@ cf_result = cm.evaluate(
     texts2=female_responses,
     attribute='gender'
 )
-cf_result
+cf_result['metrics']
 # # Output is below
 # {'Cosine Similarity': 0.8318708,
 # 'RougeL Similarity': 0.5195852482361165,

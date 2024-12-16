@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Union
+from typing import Any, Dict, Union
+
+import numpy as np
 
 from langfair.generator.counterfactual import CounterfactualGenerator
 from langfair.metrics.counterfactual import metrics
@@ -20,10 +22,10 @@ from langfair.metrics.counterfactual.metrics.baseclass.metrics import Metric
 
 MetricType = Union[list[str], list[Metric]]
 DefaultMetricObjects = {
-    "Cosine": metrics.CosineSimilarity(transformer="all-MiniLM-L6-v2"),
-    "Rougel": metrics.RougelSimilarity(),
-    "Bleu": metrics.BleuSimilarity(),
-    "Sentiment Bias": metrics.SentimentBias(),
+    "Cosine": metrics.CosineSimilarity(transformer="all-MiniLM-L6-v2", how='pairwise'),
+    "Rougel": metrics.RougelSimilarity(how='pairwise'),
+    "Bleu": metrics.BleuSimilarity(how='pairwise'),
+    "Sentiment Bias": metrics.SentimentBias(how='pairwise'),
 }
 DefaultMetricNames = list(DefaultMetricObjects.keys())
 
@@ -57,7 +59,13 @@ class CounterfactualMetrics:
         if self.neutralize_tokens:
             self.cf_generator = CounterfactualGenerator()
 
-    def evaluate(self, texts1: list, texts2: list, attribute: str = None):
+    def evaluate(
+        self, 
+        texts1: list, 
+        texts2: list, 
+        attribute: str = None, 
+        return_data: bool = False
+    ) -> Dict[str, Any]:
         """
         This method evaluate the counterfactual metrics values for the provided pair of texts.
 
@@ -74,6 +82,9 @@ class CounterfactualMetrics:
 
         attribute : {'gender', 'race'}, default='gender'
             Specifies whether to use race or gender for neutralization
+
+        return_data : bool, default=False
+            Indicates whether to include response-level counterfactual scores in results dictionary returned by this method.
 
         Returns
         -------
@@ -97,19 +108,26 @@ class CounterfactualMetrics:
                 texts=texts2, attribute=attribute
             )
         metric_values = {}
+        response_scores = {"texts1": texts1, "texts2": texts2}
         for metric in self.metrics:
             if (
                 metric.name in ["Bleu Similarity", "RougeL Similarity"]
                 and self.neutralize_tokens
             ):
-                metric_values[metric.name] = metric.evaluate(
+                scores = metric.evaluate(
                     texts1=masked_texts1, texts2=masked_texts2
                 )
             else:
-                metric_values[metric.name] = metric.evaluate(
+                scores = metric.evaluate(
                     texts1=texts1, texts2=texts2
                 )
-        return metric_values
+            response_scores[metric.name] = scores
+            metric_values[metric.name] = np.mean(scores)
+            
+        result = {"metrics": metric_values}
+        if return_data:
+            result["data"] = response_scores
+        return result
 
     def _default_instances(self):
         """Define default metrics."""
