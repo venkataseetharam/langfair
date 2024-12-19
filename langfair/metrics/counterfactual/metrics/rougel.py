@@ -32,7 +32,7 @@ class RougelSimilarity(Metric):
             Specifies which ROUGE metric to use. If sentence-wise assessment is preferred, select 'rougeLsum'.
 
         how : {'mean','pairwise'}
-            Specifies whether to return the mean cosine similarity over all counterfactual pairs or a list containing cosine
+            Specifies whether to return the mean rougel similarity over all counterfactual pairs or a list containing rougel
             distance for each pair.
         """
         assert how in [

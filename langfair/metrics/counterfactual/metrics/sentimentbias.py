@@ -130,7 +130,9 @@ class SentimentBias(Metric):
         elif self.parity == "strong":
             parity_value = self._wasserstein_1_dist(group_dists[0], group_dists[1])
 
-        return parity_value
+        return parity_value if self.how=="mean" else [
+            group_dists[0][i] - group_dists[1][i] for i in range(0, len(group_dists[0]))
+            ]
 
     def _get_sentiment_scores(self, texts: List[str]) -> List[float]:
         """Get sentiment scores"""

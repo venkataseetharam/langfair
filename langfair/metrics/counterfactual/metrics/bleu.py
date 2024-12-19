@@ -31,7 +31,7 @@ class BleuSimilarity(Metric):
         Parameters
         ----------
         how : {'mean','pairwise'}
-            Specifies whether to return the mean cosine similarity over all counterfactual pairs or a list containing cosine
+            Specifies whether to return the mean bleu similarity over all counterfactual pairs or a list containing bleu
             distance for each pair.
         """
         assert how in [
