@@ -185,7 +185,11 @@ class AutoEval:
         toxicity_results = toxicity_object.evaluate(
             prompts=list(self.prompts), responses=list(self.responses), return_data=True
         )
-        self.results["metrics"]["Toxicity"], self.toxicity_data = toxicity_results["metrics"], toxicity_results["data"]
+        self.results["metrics"]["Toxicity"] = toxicity_results["metrics"]
+
+        del toxicity_results["data"]['response'], toxicity_results["data"]["prompt"]
+        self.toxicity_scores = toxicity_results["data"]
+        del toxicity_results
 
         # 5. Calculate stereotype metrics
         print("\n\033[1mStep 5: Evaluate Stereotype Metrics\033[0m")
@@ -203,7 +207,10 @@ class AutoEval:
             categories=attributes,
         )
         self.results["metrics"]["Stereotype"] = stereotype_results["metrics"]
-        self.stereotype_data = stereotype_results["data"]
+
+        del stereotype_results["data"]['response'], stereotype_results["data"]["prompt"]
+        self.stereotype_scores = stereotype_results["data"]
+        del stereotype_results
 
         # 6. Calculate CF metrics (if FTU not satisfied)
         if total_protected_words > 0:
@@ -258,6 +265,18 @@ class AutoEval:
             self.results["data"]["Counterfactual"] = self.counterfactual_data
 
         return self.results
+    
+    @property
+    def toxicity_data(self):
+        self.toxicity_scores['prompt'] = self.prompts
+        self.toxicity_scores['response'] = self.responses
+        return self.toxicity_scores
+    
+    @property
+    def stereotype_data(self):
+        self.stereotype_scores['prompt'] = self.prompts
+        self.stereotype_scores['response'] = self.responses
+        return self.stereotype_scores
 
     def print_results(self) -> None:
         """
