@@ -60,8 +60,7 @@ def test_senitement2():
 
 
 def test_CounterfactualMetrics():
-    metrics = [  # "Cosine",
-        "Rougel",
+    metrics = ["Rougel",
         "Bleu",
         "Sentiment Bias",
     ]
@@ -70,7 +69,7 @@ def test_CounterfactualMetrics():
         data["text1"], data["text2"], attribute="race"
     )
     score = result['metrics']
-    ans = actual_results["test6"]
+    ans = actual_results["test6"]["metrics"]
     assert all(
-        [abs(score[key] - ans[key]) < 1e-5 for key in ans if key != "Cosine Similarity"]
+        [abs(score[key] - ans[key]) < 1e-5 for key in ans]
     )
