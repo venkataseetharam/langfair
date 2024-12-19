@@ -79,6 +79,7 @@ class SentimentBias(Metric):
         self.sentiment = sentiment
         self.parity = parity
         self.threshold = threshold
+        self.how = how
         self.custom_classifier = custom_classifier
 
         if custom_classifier:
