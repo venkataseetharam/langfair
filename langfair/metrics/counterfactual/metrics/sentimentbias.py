@@ -54,8 +54,8 @@ class SentimentBias(Metric):
             sentiment scores.
 
         how : {'mean','pairwise'}
-            Specifies whether to return the mean cosine similarity over all counterfactual pairs or a list containing cosine
-            distance for each pair.
+            Specifies whether to return the aggregate sentiment bias over all counterfactual pairs or a list containing difference 
+            in sentiment scores for each pair.
 
         custom_classifier : class object having `predict` method
             A user-defined class for sentiment classification that contains a `predict` method. The `predict` method must
