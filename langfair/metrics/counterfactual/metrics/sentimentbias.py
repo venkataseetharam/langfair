@@ -54,8 +54,8 @@ class SentimentBias(Metric):
             sentiment scores.
 
         how : {'mean','pairwise'}
-            Specifies whether to return the mean cosine similarity over all counterfactual pairs or a list containing cosine
-            distance for each pair.
+            Specifies whether to return the aggregate sentiment bias over all counterfactual pairs or a list containing difference 
+            in sentiment scores for each pair.
 
         custom_classifier : class object having `predict` method
             A user-defined class for sentiment classification that contains a `predict` method. The `predict` method must
@@ -79,6 +79,7 @@ class SentimentBias(Metric):
         self.sentiment = sentiment
         self.parity = parity
         self.threshold = threshold
+        self.how = how
         self.custom_classifier = custom_classifier
 
         if custom_classifier:
@@ -130,7 +131,9 @@ class SentimentBias(Metric):
         elif self.parity == "strong":
             parity_value = self._wasserstein_1_dist(group_dists[0], group_dists[1])
 
-        return parity_value
+        return parity_value if self.how=="mean" else [
+            group_dists[0][i] - group_dists[1][i] for i in range(0, len(group_dists[0]))
+            ]
 
     def _get_sentiment_scores(self, texts: List[str]) -> List[float]:
         """Get sentiment scores"""
