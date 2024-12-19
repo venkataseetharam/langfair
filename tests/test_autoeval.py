@@ -1,5 +1,7 @@
 import json
 import os
+import platform
+import unittest
 
 import pytest
 from langchain_openai import AzureChatOpenAI
@@ -10,7 +12,10 @@ datafile_path = "tests/data/autoeval/autoeval_results_file.json"
 with open(datafile_path, "r") as f:
     data = json.load(f)
 
-
+@unittest.skipIf(
+    ((os.getenv("CI") == "true") & (platform.system() == "Darwin")),
+    "Skipping test in macOS CI due to memory issues.",
+)
 @pytest.mark.asyncio
 async def test_autoeval(monkeypatch):
     mock_llm_object = AzureChatOpenAI(
