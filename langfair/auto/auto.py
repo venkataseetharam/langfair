@@ -1,3 +1,4 @@
+
 # Copyright 2024 CVS Health and/or one of its affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -113,12 +114,13 @@ class AutoEval:
             Specifies which metrics to evaluate. If None, computes all supported metrics.
 
         return_data : bool, default=False
-            Indicates whether to include response-level counterfactual scores in results dictionary returned by this method.
+            Indicates whether to include response-level scores in results dictionary returned by this method.
 
         Returns
         -------
         dict
-            A dictionary containing values of toxicity, stereotype, and counterfactual metrics.
+            A dictionary containing values of toxicity, stereotype, and counterfactual metrics and, optionally,
+            response-level scores.
         """
         if metrics is not None:
             self.metrics = self._validate_metrics(metrics)
