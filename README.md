@@ -127,7 +127,7 @@ auto_object = AutoEval(
     # toxicity_device=device # uncomment if GPU is available
 )
 results = await auto_object.evaluate()
-results
+results['metrics']
 # Output is below
 # {'Toxicity': {'Toxic Fraction': 0.0004,
 #   'Expected Maximum Toxicity': 0.013845130120171235,
