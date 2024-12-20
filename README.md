@@ -50,8 +50,8 @@ We can use `ResponseGenerator.generate_responses` to generate 25 responses for e
 from langfair.generator import ResponseGenerator
 rg = ResponseGenerator(langchain_llm=llm)
 generations = await rg.generate_responses(prompts=prompts, count=25)
-responses = [str(r) for r in generations["data"]["response"]]
-duplicated_prompts = [str(r) for r in generations["data"]["prompt"]] # so prompts correspond to responses
+responses = generations["data"]["response"]
+duplicated_prompts = generations["data"]["prompt"] # so prompts correspond to responses
 ```
 
 ##### Compute toxicity metrics
@@ -96,8 +96,8 @@ cg = CounterfactualGenerator(langchain_llm=llm)
 cf_generations = await cg.generate_responses(
     prompts=prompts, attribute='gender', count=25
 )
-male_responses = [str(r) for r in cf_generations['data']['male_response']]
-female_responses = [str(r) for r in cf_generations['data']['female_response']]
+male_responses = cf_generations['data']['male_response']
+female_responses = cf_generations['data']['female_response']
 ```
 
 Counterfactual metrics can be easily computed with `CounterfactualMetrics`.
@@ -109,7 +109,7 @@ cf_result = cm.evaluate(
     texts2=female_responses,
     attribute='gender'
 )
-cf_result
+cf_result['metrics']
 # # Output is below
 # {'Cosine Similarity': 0.8318708,
 # 'RougeL Similarity': 0.5195852482361165,
@@ -127,7 +127,7 @@ auto_object = AutoEval(
     # toxicity_device=device # uncomment if GPU is available
 )
 results = await auto_object.evaluate()
-results
+results['metrics']
 # Output is below
 # {'Toxicity': {'Toxic Fraction': 0.0004,
 #   'Expected Maximum Toxicity': 0.013845130120171235,

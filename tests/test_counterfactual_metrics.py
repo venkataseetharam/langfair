@@ -1,3 +1,17 @@
+# Copyright 2024 CVS Health and/or one of its affiliates
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+ 
 import json
 import os
 import platform
@@ -60,16 +74,16 @@ def test_senitement2():
 
 
 def test_CounterfactualMetrics():
-    metrics = [  # "Cosine",
-        "Rougel",
+    metrics = ["Rougel",
         "Bleu",
         "Sentiment Bias",
     ]
     counterfactualmetrics = CounterfactualMetrics(metrics=metrics)
-    score = counterfactualmetrics.evaluate(
+    result = counterfactualmetrics.evaluate(
         data["text1"], data["text2"], attribute="race"
     )
-    ans = actual_results["test6"]
+    score = result['metrics']
+    ans = actual_results["test6"]["metrics"]
     assert all(
-        [abs(score[key] - ans[key]) < 1e-5 for key in ans if key != "Cosine Similarity"]
+        [abs(score[key] - ans[key]) < 1e-5 for key in ans]
     )
