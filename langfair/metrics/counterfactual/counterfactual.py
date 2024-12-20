@@ -122,7 +122,7 @@ class CounterfactualMetrics:
                     texts1=texts1, texts2=texts2
                 )
             response_scores[metric.name] = scores
-            metric_values[metric.name] = np.mean(scores)
+            
             if metric.name == "Sentiment Bias":
                 metric_values[metric.name] = metric.parity_value
             else:
