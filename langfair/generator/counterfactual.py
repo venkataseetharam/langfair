@@ -435,6 +435,9 @@ class CounterfactualGenerator(ResponseGenerator):
         custom_list : List[str], default=None
             Custom list of tokens to use for parsing prompts. Must be provided if attribute is None.
 
+        subset_prompts : bool, default=True
+            Indicates whether to return all prompts or only those containing attribute words
+
         Returns
         -------
         dict
