@@ -456,14 +456,15 @@ class CounterfactualGenerator(ResponseGenerator):
             "Protected attribute" if not attribute else attribute.capitalize()
         )
         attribute_words = self.parse_texts(
-            texts=prompts, 
-            attribute=attribute, 
-            custom_list=custom_list, 
-            subset_prompts=subset_prompts
+            texts=prompts, attribute=attribute, custom_list=custom_list, 
         )
         prompts_subset = [
             prompt for i, prompt in enumerate(prompts) if attribute_words[i]
         ]
+        attribute_words_subset = [
+            aw for i, aw in enumerate(attribute_words) if attribute_words[i]
+        ]
+
         n_prompts_with_attribute_words = len(prompts_subset)
         ftu_satisfied = (n_prompts_with_attribute_words > 0)
 
@@ -475,7 +476,7 @@ class CounterfactualGenerator(ResponseGenerator):
         return {
             "data": {
                 "prompts": prompts_subset if subset_prompts else prompts,
-                "attribute_words": attribute_words
+                "attribute_words": attribute_words_subset if subset_prompts else attribute_words
             },
             "metadata": {
                 "ftu_satisfied": ftu_satisfied,
