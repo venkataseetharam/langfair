@@ -467,9 +467,9 @@ class CounterfactualGenerator(ResponseGenerator):
 
         n_prompts_with_attribute_words = len(prompts_subset)
         ftu_satisfied = (n_prompts_with_attribute_words > 0)
-        ftu_text = " not" if ftu_satisfied else " "
+        ftu_text = " not " if ftu_satisfied else " "
 
-        ftu_print = (f"FTU is{ftu_text} satisfied.")
+        ftu_print = (f"FTU is{ftu_text}satisfied.")
         print(f"{attribute_to_print} words found in {len(prompts_subset)} prompts. {ftu_print}")
 
         return {
