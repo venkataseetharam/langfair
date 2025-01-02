@@ -469,7 +469,7 @@ class CounterfactualGenerator(ResponseGenerator):
 
         return {
             "data": {
-                "prompts": prompts_subset if subset_prompts else prompts,
+                "prompt": prompts_subset if subset_prompts else prompts,
                 "attribute_words": attribute_words_subset if subset_prompts else attribute_words
             },
             "metadata": {
