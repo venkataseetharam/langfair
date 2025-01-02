@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "langfair"
-version = "0.3.0"
+version = "0.3.1"
 description = "LangFair is a Python library for conducting use-case level LLM bias and fairness assessments"
 readme = "README.md"
 authors = ["Dylan Bouchard <dylan.bouchard@cvshealth.com>",
@@ -50,6 +50,13 @@ pre-commit = "3.7.1"
 ruff = "^0.4.8"
 pytest = "^8.3.3"
 pytest-asyncio = "^0.24.0"
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "7.3.7"
+pydata_sphinx_theme = "0.16.1"
+sphinxcontrib-bibtex = "2.6.3"
+sphinx-autodoc-typehints = "2.2.0"
+sphinx-gallery = "0.18.0"
 
 [tool.poetry.group.extra_llms.dependencies]
 langchain-mistralai = "^0.2.2"

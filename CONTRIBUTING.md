@@ -47,7 +47,7 @@ Please ensure your pull request adheres to the following guidelines:
 
 ## Development Setup
 
-1. Clone the repository: `git clone https://github.aetna.com/cvs-health/langfair`
+1. Clone the repository: `git clone https://github.com/cvs-health/langfair.git`
 2. Navigate to the project directory: `cd langfair`
 3. Create and activate a virtual environment (using `venv` or `conda`)
 4. Install dependencies: `poetry install`
