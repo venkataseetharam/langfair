@@ -433,16 +433,22 @@ class CounterfactualGenerator(ResponseGenerator):
         -------
         dict
             A dictionary with two keys: 'data' and 'metadata'.
+
             'data' : dict
-                A dictionary containing the prompts and responses.
+                A dictionary containing the prompts and the attribute words they contain.
+
                 'prompt' : list
                     A list of prompts.
+
                 'attribute_words' : list
                     A list of attribute_words in each prompt.
+
             'metadata' : dict
                 A dictionary containing metadata related to FTU.
+
                 'ftu_satisfied' : boolean
                     Boolean indicator of whether or not prompts satisfy FTU
+               
                 'filtered_prompt_count' : int
                     The number of prompts that satisfy FTU.
         """
