@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional,List
 
 from numpy.typing import ArrayLike
 
@@ -38,7 +38,24 @@ class Metric(ABC):
         pass
 
     @staticmethod
-    def binary_confusion_matrix(y_true, y_pred):
+    def binary_confusion_matrix(y_true, y_pred) -> List[List[float]]:
+        """
+        Method for computing binary confusion matrix    
+
+        Parameters
+        ----------
+        y_true : Array-like
+            Binary labels (ground truth values)
+
+        y_pred : Array-like
+            Binary model predictions    
+
+        Returns
+        -------
+        List[List[float]]
+            2x2 confusion matrix 
+
+        """
         cm = [[0, 0], [0, 0]]
         for i in range(len(y_pred)):
             if y_pred[i] == y_true[i]:
