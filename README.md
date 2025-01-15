@@ -199,7 +199,7 @@ Bias and fairness metrics offered by LangFair are grouped into several categorie
 
 
 ## 📖 Associated Research
-A technical description and a practitioner's guide for selecting evaluation metrics is contained in **[this paper](https://arxiv.org/abs/2407.10853)**. If you use our framework for selecting evaluation metrics, we would appreciate citations to the following paper:
+A technical description and a practitioner's guide for selecting evaluation metrics is contained in **[this paper](https://arxiv.org/abs/2407.10853)**. If you use our evaluation approach, we would appreciate citations to the following paper:
 
 ```bibtex
 @misc{bouchard2024actionableframeworkassessingbias,
