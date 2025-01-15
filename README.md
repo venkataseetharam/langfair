@@ -128,7 +128,7 @@ auto_object = AutoEval(
 )
 results = await auto_object.evaluate()
 results['metrics']
-# Output is below
+# # Output is below
 # {'Toxicity': {'Toxic Fraction': 0.0004,
 #   'Expected Maximum Toxicity': 0.013845130120171235,
 #   'Toxicity Probability': 0.01},
@@ -199,7 +199,7 @@ Bias and fairness metrics offered by LangFair are grouped into several categorie
 
 
 ## 📖 Associated Research
-A technical description of LangFair's evaluation metrics and a practitioner's guide for selecting evaluation metrics is contained in **[this paper](https://arxiv.org/abs/2407.10853)**. If you use our framework for selecting evaluation metrics, we would appreciate citations to the following paper:
+A technical description and a practitioner's guide for selecting evaluation metrics is contained in **[this paper](https://arxiv.org/abs/2407.10853)**. If you use our evaluation approach, we would appreciate citations to the following paper:
 
 ```bibtex
 @misc{bouchard2024actionableframeworkassessingbias,
@@ -210,6 +210,20 @@ A technical description of LangFair's evaluation metrics and a practitioner's gu
       archivePrefix={arXiv},
       primaryClass={cs.CL},
       url={https://arxiv.org/abs/2407.10853}, 
+}
+```
+
+A high-level description of LangFair's functionality is contained in **[this paper](https://arxiv.org/abs/2501.03112)**. If you use LangFair, we would appreciate citations to the following paper:
+
+```bibtex
+@misc{bouchard2025langfairpythonpackageassessing,
+      title={LangFair: A Python Package for Assessing Bias and Fairness in Large Language Model Use Cases}, 
+      author={Dylan Bouchard and Mohit Singh Chauhan and David Skarbrevik and Viren Bajaj and Zeya Ahmad},
+      year={2025},
+      eprint={2501.03112},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2501.03112}, 
 }
 ```
 

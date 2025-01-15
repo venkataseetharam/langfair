@@ -334,10 +334,18 @@ class CounterfactualGenerator(ResponseGenerator):
         ----------
         dict
             A dictionary with two keys: 'data' and 'metadata'.
+
             'data' : dict
                 A dictionary containing the prompts and responses.
+                
+                'prompt' : list
+                    A list of prompts.
+                'response' : list
+                    A list of responses corresponding to the prompts.
+
             'metadata' : dict
                 A dictionary containing metadata about the generation process.
+
                 'non_completion_rate' : float
                     The rate at which the generation process did not complete.
                 'temperature' : float
@@ -433,16 +441,22 @@ class CounterfactualGenerator(ResponseGenerator):
         -------
         dict
             A dictionary with two keys: 'data' and 'metadata'.
+
             'data' : dict
-                A dictionary containing the prompts and responses.
+                A dictionary containing the prompts and the attribute words they contain.
+
                 'prompt' : list
                     A list of prompts.
+
                 'attribute_words' : list
                     A list of attribute_words in each prompt.
+
             'metadata' : dict
                 A dictionary containing metadata related to FTU.
+
                 'ftu_satisfied' : boolean
                     Boolean indicator of whether or not prompts satisfy FTU
+               
                 'filtered_prompt_count' : int
                     The number of prompts that satisfy FTU.
         """
