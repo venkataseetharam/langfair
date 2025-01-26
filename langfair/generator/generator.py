@@ -48,7 +48,7 @@ class ResponseGenerator:
 
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
-        
+
         failure_message: str | Dict, default=FAILURE_MESSAGE(defined in langfair/constants/cost_data.py)
             Enables users to specify exception-specific failure messages that can either be a dictionary with keys being exceptions
             and values being strings specifying  the failure message or just a string that is the same for all exceptions
@@ -213,7 +213,7 @@ class ResponseGenerator:
 
             'metadata' : dict
                 A dictionary containing metadata about the generation process.
-                
+
                 'non_completion_rate' : float
                     The rate at which the generation process did not complete.
                 'temperature' : float
@@ -319,7 +319,7 @@ class ResponseGenerator:
     def _enforce_strings(texts: List[Any]) -> List[str]:
         """Enforce that all outputs are strings"""
         return [str(r) for r in texts]
-            
+
     @staticmethod
     def _num_tokens_from_messages(
         messages: List[Dict[str, str]], model: str, prompt: bool = True

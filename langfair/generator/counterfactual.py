@@ -17,6 +17,7 @@ import nltk
 import sacremoses
 from nltk.tokenize import word_tokenize
 
+from langfair.constants.cost_data import FAILURE_MESSAGE
 from langfair.constants.word_lists import (
     FEMALE_WORDS,
     GENDER_NEUTRAL_WORDS,
@@ -26,7 +27,6 @@ from langfair.constants.word_lists import (
     RACE_WORDS_NOT_REQUIRING_CONTEXT,
     RACE_WORDS_REQUIRING_CONTEXT,
 )
-from langfair.constants.cost_data import FAILURE_MESSAGE
 from langfair.generator.generator import ResponseGenerator
 
 # Constants for CounterfactualDatasetGenerator class
@@ -80,7 +80,7 @@ class CounterfactualGenerator(ResponseGenerator):
 
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
-        
+
         failure_message: str | Dict, default=FAILURE_MESSAGE(defined in langfair/constants/cost_data.py)
             Enables users to specify exception-specific failure messages that can either be a dictionary with keys being exceptions
             and values being strings specifying  the failure message or just a string that is the same for all exceptions
@@ -344,7 +344,7 @@ class CounterfactualGenerator(ResponseGenerator):
 
             'data' : dict
                 A dictionary containing the prompts and responses.
-                
+
                 'prompt' : list
                     A list of prompts.
                 'response' : list
@@ -463,7 +463,7 @@ class CounterfactualGenerator(ResponseGenerator):
 
                 'ftu_satisfied' : boolean
                     Boolean indicator of whether or not prompts satisfy FTU
-               
+
                 'filtered_prompt_count' : int
                     The number of prompts that satisfy FTU.
         """
@@ -472,7 +472,9 @@ class CounterfactualGenerator(ResponseGenerator):
             "Protected attribute" if not attribute else attribute.capitalize()
         )
         attribute_words = self.parse_texts(
-            texts=prompts, attribute=attribute, custom_list=custom_list, 
+            texts=prompts,
+            attribute=attribute,
+            custom_list=custom_list,
         )
         prompts_subset = [
             prompt for i, prompt in enumerate(prompts) if attribute_words[i]
@@ -482,24 +484,28 @@ class CounterfactualGenerator(ResponseGenerator):
         ]
 
         n_prompts_with_attribute_words = len(prompts_subset)
-        ftu_satisfied = (n_prompts_with_attribute_words > 0)
+        ftu_satisfied = n_prompts_with_attribute_words > 0
         ftu_text = " not " if ftu_satisfied else " "
 
-        ftu_print = (f"FTU is{ftu_text}satisfied.")
-        print(f"{attribute_to_print} words found in {len(prompts_subset)} prompts. {ftu_print}")
+        ftu_print = f"FTU is{ftu_text}satisfied."
+        print(
+            f"{attribute_to_print} words found in {len(prompts_subset)} prompts. {ftu_print}"
+        )
 
         return {
             "data": {
                 "prompt": prompts_subset if subset_prompts else prompts,
-                "attribute_words": attribute_words_subset if subset_prompts else attribute_words
+                "attribute_words": attribute_words_subset
+                if subset_prompts
+                else attribute_words,
             },
             "metadata": {
                 "ftu_satisfied": ftu_satisfied,
                 "n_prompts_with_attribute_words": n_prompts_with_attribute_words,
                 "attribute": attribute,
                 "custom_list": custom_list,
-                "subset_prompts": subset_prompts
-            }
+                "subset_prompts": subset_prompts,
+            },
         }
 
     def _subset_prompts(
@@ -509,7 +515,7 @@ class CounterfactualGenerator(ResponseGenerator):
         custom_list: Optional[List[str]] = None,
     ) -> Tuple[List[str], List[List[str]]]:
         """
-        Helper function to subset prompts that contain protected attribute words and also 
+        Helper function to subset prompts that contain protected attribute words and also
         return the full set of parsing results
         """
         attribute_to_print = (
@@ -615,26 +621,22 @@ class CounterfactualGenerator(ResponseGenerator):
 
     @staticmethod
     def _validate_attributes(
-        attribute: Optional[str] = None, 
-        custom_list: Optional[List[str]] = None, 
+        attribute: Optional[str] = None,
+        custom_list: Optional[List[str]] = None,
         custom_dict: Optional[Dict[str, str]] = None,
-        for_parsing: bool = True 
+        for_parsing: bool = True,
     ) -> None:
         if for_parsing:
-            if (custom_list and attribute):
-                raise ValueError(
-                    "Either custom_list or attribute must be None."
-                ) 
+            if custom_list and attribute:
+                raise ValueError("Either custom_list or attribute must be None.")
             if not (custom_list or attribute in ["race", "gender"]):
                 raise ValueError(
                     "If custom_list is None, attribute must be 'race' or 'gender'."
-                ) 
+                )
         else:
-            if (custom_dict and attribute):
-                raise ValueError(
-                    "Either custom_dict or attribute must be None."
-                ) 
+            if custom_dict and attribute:
+                raise ValueError("Either custom_dict or attribute must be None.")
             if not (custom_dict or attribute in ["race", "gender"]):
                 raise ValueError(
                     "If custom_dict is None, attribute must be 'race' or 'gender'."
-                ) 
+                )
