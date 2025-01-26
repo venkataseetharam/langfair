@@ -48,7 +48,7 @@ class AutoEval:
         toxicity_device: str = "cpu",
         neutralize_tokens: str = True,
         max_calls_per_min: Optional[int] = None,
-        failure_message: str | Dict = FAILURE_MESSAGE,
+        failure_message: str | Dict[BaseException, str] = FAILURE_MESSAGE,
     ) -> None:
         """
         This class calculates all toxicity, stereotype, and counterfactual metrics support by langfair
@@ -83,7 +83,7 @@ class AutoEval:
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
 
-        failure_message: str | Dict, default=FAILURE_MESSAGE(defined in langfair/constants/cost_data.py)
+        failure_message: str | Dict[BaseException, str], default=FAILURE_MESSAGE(defined in langfair/constants/cost_data.py)
             Enables users to specify exception-specific failure messages that can either be a dictionary with keys being exceptions
             and values being strings specifying  the failure message or just a string that is the same for all exceptions
 

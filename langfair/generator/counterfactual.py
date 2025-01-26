@@ -61,7 +61,7 @@ class CounterfactualGenerator(ResponseGenerator):
             Union[Tuple[BaseException], BaseException]
         ] = None,
         max_calls_per_min: Optional[int] = None,
-        failure_message: str | Dict = FAILURE_MESSAGE,
+        failure_message: str | Dict[BaseException, str] = FAILURE_MESSAGE,
     ) -> None:
         """
         Class for parsing and replacing protected attribute words.
@@ -81,7 +81,7 @@ class CounterfactualGenerator(ResponseGenerator):
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
 
-        failure_message: str | Dict, default=FAILURE_MESSAGE(defined in langfair/constants/cost_data.py)
+        failure_message: str | Dict[BaseException, str], default=FAILURE_MESSAGE(defined in langfair/constants/cost_data.py)
             Enables users to specify exception-specific failure messages that can either be a dictionary with keys being exceptions
             and values being strings specifying  the failure message or just a string that is the same for all exceptions
         """
@@ -393,13 +393,24 @@ class CounterfactualGenerator(ResponseGenerator):
             responses_dict[group + "_response"] = self._enforce_strings(tmp_responses)
             # stop = time.time()
 
-        non_completion_rate = len(
-            [
-                i
-                for i, vals in enumerate(zip(responses_dict.values()))
-                if self.failure_message in vals
-            ]
-        ) / len(list(responses_dict.values())[0])
+        # if self.failure_message is a string
+        if isinstance(self.failure_message, str):
+            non_completion_rate = len(
+                [
+                    i
+                    for i, vals in enumerate(zip(responses_dict.values()))
+                    if self.failure_message in vals
+                ]
+            ) / len(list(responses_dict.values())[0])
+        # if self.failure_message is a dict
+        else:
+            non_completion_rate = len(
+                [
+                    i
+                    for i, vals in enumerate(zip(responses_dict.values()))
+                    if any(value in vals for value in self.failure_message.values())
+                ]
+            ) / len(list(responses_dict.values())[0])
 
         print("Responses successfully generated!")
         return {

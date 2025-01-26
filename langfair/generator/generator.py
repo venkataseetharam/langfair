@@ -31,7 +31,7 @@ class ResponseGenerator:
             Union[Tuple[BaseException], BaseException]
         ] = None,
         max_calls_per_min: Optional[int] = None,
-        failure_message: str | Dict = FAILURE_MESSAGE,
+        failure_message: str | Dict[BaseException, str] = FAILURE_MESSAGE,
     ) -> None:
         """
         Class for generating data from a provided set of prompts
@@ -49,7 +49,7 @@ class ResponseGenerator:
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
 
-        failure_message: str | Dict, default=FAILURE_MESSAGE(defined in langfair/constants/cost_data.py)
+        failure_message: str | Dict[BaseException, str], default=FAILURE_MESSAGE(defined in langfair/constants/cost_data.py)
             Enables users to specify exception-specific failure messages that can either be a dictionary with keys being exceptions
             and values being strings specifying  the failure message or just a string that is the same for all exceptions
         """
@@ -238,9 +238,18 @@ class ResponseGenerator:
         chain = self._setup_langchain(system_prompt=system_prompt)
         tasks, duplicated_prompts = self._create_tasks(chain=chain, prompts=prompts)
         responses = await asyncio.gather(*tasks)
-        non_completion_rate = len(
-            [r for r in responses if r == self.failure_message]
-        ) / len(responses)
+        if isinstance(self.failure_message, str):
+            non_completion_rate = len(
+                [r for r in responses if r == self.failure_message]
+            ) / len(responses)
+        else:
+            non_completion_rate = len(
+                [
+                    r
+                    for r in responses
+                    if any(r == value for value in self.failure_message.values())
+                ]
+            ) / len(responses)
 
         print("Responses successfully generated!")
         return {
@@ -292,7 +301,10 @@ class ResponseGenerator:
         except Exception as err:
             if self.suppressed_exceptions is not None:
                 if isinstance(err, self.suppressed_exceptions):
-                    return self.failure_message
+                    if isinstance(self.failure_message, str):
+                        return self.failure_message
+                    else:
+                        return self.failure_message[err]
             raise err
 
     @staticmethod
