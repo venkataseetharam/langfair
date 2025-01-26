@@ -304,7 +304,7 @@ class ResponseGenerator:
                     if isinstance(self.failure_message, str):
                         return self.failure_message
                     else:
-                        return self.failure_message[err]
+                        return self.failure_message.get(err, FAILURE_MESSAGE)
             raise err
 
     @staticmethod
