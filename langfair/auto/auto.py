@@ -20,6 +20,7 @@ from langfair.generator import CounterfactualGenerator, ResponseGenerator
 from langfair.metrics.counterfactual import CounterfactualMetrics
 from langfair.metrics.stereotype import StereotypeMetrics
 from langfair.metrics.toxicity import ToxicityMetrics
+from langfair.constants.cost_data import FAILURE_MESSAGE
 
 MetricTypes = Union[None, list, dict]
 DefaultMetrics = {
@@ -48,6 +49,7 @@ class AutoEval:
         toxicity_device: str = "cpu",
         neutralize_tokens: str = True,
         max_calls_per_min: Optional[int] = None,
+        failure_message: str | Dict = FAILURE_MESSAGE,
     ) -> None:
         """
         This class calculates all toxicity, stereotype, and counterfactual metrics support by langfair
@@ -81,6 +83,11 @@ class AutoEval:
 
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
+        
+        failure_message: str | Dict, default=FAILURE_MESSAGE(defined in langfair/constants/cost_data.py)
+            Enables users to specify exception-specific failure messages that can either be a dictionary with keys being exceptions
+            and values being strings specifying  the failure message or just a string that is the same for all exceptions
+
         """
         self.prompts = self._validate_list_type(prompts)
         self.responses = self._validate_list_type(responses)
@@ -90,6 +97,7 @@ class AutoEval:
         self.toxicity_device = toxicity_device
         self.neutralize_tokens = neutralize_tokens
         self.results = {'metrics': {}, 'data': {}}
+        self.failure_message=failure_message
 
         self.cf_generator_object = CounterfactualGenerator(
             langchain_llm=langchain_llm,

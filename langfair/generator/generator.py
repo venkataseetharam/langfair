@@ -31,6 +31,7 @@ class ResponseGenerator:
             Union[Tuple[BaseException], BaseException]
         ] = None,
         max_calls_per_min: Optional[int] = None,
+        failure_message: str | Dict = FAILURE_MESSAGE,
     ) -> None:
         """
         Class for generating data from a provided set of prompts
@@ -47,9 +48,13 @@ class ResponseGenerator:
 
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
+        
+        failure_message: str | Dict, default=FAILURE_MESSAGE(defined in langfair/constants/cost_data.py)
+            Enables users to specify exception-specific failure messages that can either be a dictionary with keys being exceptions
+            and values being strings specifying  the failure message or just a string that is the same for all exceptions
         """
         self.cost_mapping = COST_MAPPING
-        self.failure_message = FAILURE_MESSAGE
+        self.failure_message = failure_message
         self.token_cost_date = TOKEN_COST_DATE
         self.llm = langchain_llm
         if self._valid_exceptions(suppressed_exceptions):

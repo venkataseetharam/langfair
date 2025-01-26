@@ -26,6 +26,7 @@ from langfair.constants.word_lists import (
     RACE_WORDS_NOT_REQUIRING_CONTEXT,
     RACE_WORDS_REQUIRING_CONTEXT,
 )
+from langfair.constants.cost_data import FAILURE_MESSAGE
 from langfair.generator.generator import ResponseGenerator
 
 # Constants for CounterfactualDatasetGenerator class
@@ -60,6 +61,7 @@ class CounterfactualGenerator(ResponseGenerator):
             Union[Tuple[BaseException], BaseException]
         ] = None,
         max_calls_per_min: Optional[int] = None,
+        failure_message: str | Dict = FAILURE_MESSAGE,
     ) -> None:
         """
         Class for parsing and replacing protected attribute words.
@@ -78,11 +80,16 @@ class CounterfactualGenerator(ResponseGenerator):
 
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
+        
+        failure_message: str | Dict, default=FAILURE_MESSAGE(defined in langfair/constants/cost_data.py)
+            Enables users to specify exception-specific failure messages that can either be a dictionary with keys being exceptions
+            and values being strings specifying  the failure message or just a string that is the same for all exceptions
         """
         super().__init__(
             langchain_llm=langchain_llm,
             suppressed_exceptions=suppressed_exceptions,
             max_calls_per_min=max_calls_per_min,
+            failure_message=failure_message,
         )
         self.attribute_to_word_lists = {
             "race": ALL_RACE_WORDS,
