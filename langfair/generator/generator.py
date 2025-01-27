@@ -248,6 +248,7 @@ class ResponseGenerator:
                     r
                     for r in responses
                     if any(r == value for value in self.failure_message.values())
+                    or r == FAILURE_MESSAGE
                 ]
             ) / len(responses)
 

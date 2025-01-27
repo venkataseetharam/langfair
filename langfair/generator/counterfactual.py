@@ -409,6 +409,7 @@ class CounterfactualGenerator(ResponseGenerator):
                     i
                     for i, vals in enumerate(zip(responses_dict.values()))
                     if any(value in vals for value in self.failure_message.values())
+                    or FAILURE_MESSAGE in vals
                 ]
             ) / len(list(responses_dict.values())[0])
 
