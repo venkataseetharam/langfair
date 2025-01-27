@@ -102,11 +102,13 @@ class AutoEval:
             langchain_llm=langchain_llm,
             max_calls_per_min=max_calls_per_min,
             suppressed_exceptions=suppressed_exceptions,
+            failure_message=failure_message,
         )
         self.generator_object = ResponseGenerator(
             langchain_llm=langchain_llm,
             max_calls_per_min=max_calls_per_min,
             suppressed_exceptions=suppressed_exceptions,
+            failure_message=failure_message,
         )
 
     async def evaluate(
@@ -243,11 +245,21 @@ class AutoEval:
                             "data"
                         ][group2 + "_response"]
                         fm = self.cf_generator_object.failure_message
-                        successful_response_index = [
-                            i
-                            for i in range(len(group1_response))
-                            if group1_response[i] != fm and group2_response[i] != fm
-                        ]
+                        if isinstance(fm, str):
+                            successful_response_index = [
+                                i
+                                for i in range(len(group1_response))
+                                if group1_response[i] != fm and group2_response[i] != fm
+                            ]
+                        else:
+                            failure_messages = list(self.failure_message.values())
+                            failure_messages.append(FAILURE_MESSAGE)
+                            successful_response_index = [
+                                i
+                                for i in range(len(group1_response))
+                                if group1_response[i] not in failure_messages
+                                and group2_response[i] not in failure_messages
+                            ]
                         cf_group_results = counterfactual_object.evaluate(
                             texts1=[
                                 group1_response[i] for i in successful_response_index
