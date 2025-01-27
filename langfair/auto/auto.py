@@ -252,8 +252,8 @@ class AutoEval:
                                 if group1_response[i] != fm and group2_response[i] != fm
                             ]
                         else:
-                            failure_messages = list(self.failure_message.values())
-                            failure_messages.append(FAILURE_MESSAGE)
+                            failure_messages = set(self.failure_message.values())
+                            failure_messages.add(FAILURE_MESSAGE)
                             successful_response_index = [
                                 i
                                 for i in range(len(group1_response))
