@@ -1,4 +1,3 @@
-
 # Copyright 2024 CVS Health and/or one of its affiliates
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +15,7 @@
 from itertools import combinations
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+from langfair.constants.cost_data import FAILURE_MESSAGE
 from langfair.generator import CounterfactualGenerator, ResponseGenerator
 from langfair.metrics.counterfactual import CounterfactualMetrics
 from langfair.metrics.stereotype import StereotypeMetrics
@@ -43,7 +43,9 @@ class AutoEval:
         prompts: List[str],
         responses: Optional[List[str]] = None,
         langchain_llm: Any = None,
-        suppressed_exceptions: Optional[Tuple] = None,
+        suppressed_exceptions: Optional[
+            Union[Tuple[BaseException], BaseException, Dict[BaseException, str]]
+        ] = None,
         metrics: MetricTypes = None,
         toxicity_device: str = "cpu",
         neutralize_tokens: str = True,
@@ -64,9 +66,10 @@ class AutoEval:
             A langchain llm object to get passed to chain constructor. User is responsible for specifying
             temperature and other relevant parameters to the constructor of their `langchain_llm` object.
 
-        suppressed_exceptions : tuple, default=None
-            Specifies which exceptions to handle as 'Unable to get response' rather than raising the
-            exception
+        suppressed_exceptions : tuple or dict, default=None
+            If a tuple,Specifies which exceptions to handle as 'Unable to get response' rather than raising the
+            exception. If a dict,enables users to specify exception-specific failure messages with keys being subclasses
+            of BaseException
 
         metrics : dict or list of str, default option compute all supported metrics.
             Specifies which metrics to evaluate.
@@ -89,7 +92,7 @@ class AutoEval:
         self.metrics = self._validate_metrics(metrics)
         self.toxicity_device = toxicity_device
         self.neutralize_tokens = neutralize_tokens
-        self.results = {'metrics': {}, 'data': {}}
+        self.results = {"metrics": {}, "data": {}}
 
         self.cf_generator_object = CounterfactualGenerator(
             langchain_llm=langchain_llm,
@@ -189,7 +192,7 @@ class AutoEval:
         )
         self.results["metrics"]["Toxicity"] = toxicity_results["metrics"]
 
-        del toxicity_results["data"]['response'], toxicity_results["data"]["prompt"]
+        del toxicity_results["data"]["response"], toxicity_results["data"]["prompt"]
         self.toxicity_scores = toxicity_results["data"]
         del toxicity_results
 
@@ -210,7 +213,7 @@ class AutoEval:
         )
         self.results["metrics"]["Stereotype"] = stereotype_results["metrics"]
 
-        del stereotype_results["data"]['response'], stereotype_results["data"]["prompt"]
+        del stereotype_results["data"]["response"], stereotype_results["data"]["prompt"]
         self.stereotype_scores = stereotype_results["data"]
         del stereotype_results
 
@@ -235,49 +238,61 @@ class AutoEval:
                         group2_response = self.counterfactual_responses[attribute][
                             "data"
                         ][group2 + "_response"]
-                        fm = self.cf_generator_object.failure_message
-                        successful_response_index = [
-                            i
-                            for i in range(len(group1_response))
-                            if group1_response[i] != fm and group2_response[i] != fm
-                        ]
-                        cf_group_results = (
-                            counterfactual_object.evaluate(
-                                texts1=[
-                                    group1_response[i]
-                                    for i in successful_response_index
-                                ],
-                                texts2=[
-                                    group2_response[i]
-                                    for i in successful_response_index
-                                ],
-                                attribute=attribute,
-                                return_data=True
-                            )
+                        # se stands for suppressed_exceptions
+                        se = self.cf_generator_object.suppressed_exceptions
+                        if isinstance(se, Dict):
+                            failure_messages = set(self.suppressed_exceptions.values())
+                            failure_messages.add(FAILURE_MESSAGE)
+                            successful_response_index = [
+                                i
+                                for i in range(len(group1_response))
+                                if group1_response[i] not in failure_messages
+                                and group2_response[i] not in failure_messages
+                            ]
+                        else:
+                            successful_response_index = [
+                                i
+                                for i in range(len(group1_response))
+                                if group1_response[i] != FAILURE_MESSAGE
+                                and group2_response[i] != FAILURE_MESSAGE
+                            ]
+                        cf_group_results = counterfactual_object.evaluate(
+                            texts1=[
+                                group1_response[i] for i in successful_response_index
+                            ],
+                            texts2=[
+                                group2_response[i] for i in successful_response_index
+                            ],
+                            attribute=attribute,
+                            return_data=True,
                         )
-                        self.results["metrics"]["Counterfactual"][f"{group1}-{group2}"] = cf_group_results['metrics']
-                        self.counterfactual_data[f"{group1}-{group2}"] = cf_group_results['data']
+                        self.results["metrics"]["Counterfactual"][
+                            f"{group1}-{group2}"
+                        ] = cf_group_results["metrics"]
+                        self.counterfactual_data[f"{group1}-{group2}"] = (
+                            cf_group_results["data"]
+                        )
         else:
             print("\n\033[1m(Skipping) Step 6: Evaluate Counterfactual Metrics\033[0m")
             print("--------------------------------------------------")
-        
+
         if return_data:
             self.results["data"]["Toxicity"] = self.toxicity_data
             self.results["data"]["Stereotype"] = self.stereotype_data
             self.results["data"]["Counterfactual"] = self.counterfactual_data
 
         return self.results
-    
+
     @property
     def toxicity_data(self):
-        self.toxicity_scores['prompt'] = self.prompts
-        self.toxicity_scores['response'] = self.responses
+        self.toxicity_scores["prompt"] = self.prompts
+        self.toxicity_scores["response"] = self.responses
         return self.toxicity_scores
-    
+
     @property
     def stereotype_data(self):
-        self.stereotype_scores['prompt'] = self.prompts
-        self.stereotype_scores['response'] = self.responses
+        self.stereotype_scores["prompt"] = self.prompts
+        self.stereotype_scores["response"] = self.responses
         return self.stereotype_scores
 
     def print_results(self) -> None:
@@ -313,7 +328,9 @@ class AutoEval:
         )
         for key in self.results["metrics"]["Toxicity"]:
             result_list.append(
-                "- {:<40} {:1.4f} \n".format(key, self.results["metrics"]["Toxicity"][key])
+                "- {:<40} {:1.4f} \n".format(
+                    key, self.results["metrics"]["Toxicity"][key]
+                )
             )
 
         result_list.append(
@@ -323,7 +340,9 @@ class AutoEval:
             tmp = "- {:<40} {:1.4f} \n"
             if self.results["metrics"]["Stereotype"][key] is None:
                 tmp = "- {:<40} {} \n"
-            result_list.append(tmp.format(key, self.results["metrics"]["Stereotype"][key]))
+            result_list.append(
+                tmp.format(key, self.results["metrics"]["Stereotype"][key])
+            )
 
         if "Counterfactual" in self.results["metrics"]:
             result_list.append(
@@ -335,13 +354,17 @@ class AutoEval:
             tmp.append(" \n")
             result_list.append("".join(tmp))
 
-            for metric_name in list(self.results["metrics"]["Counterfactual"].values())[0]:
+            for metric_name in list(self.results["metrics"]["Counterfactual"].values())[
+                0
+            ]:
                 tmp = ["- ", "{:<25}".format(metric_name)]
                 for key in self.results["metrics"]["Counterfactual"]:
                     tmp.append(
                         "{:<15}".format(
                             "{:1.4f}".format(
-                                self.results["metrics"]["Counterfactual"][key][metric_name]
+                                self.results["metrics"]["Counterfactual"][key][
+                                    metric_name
+                                ]
                             )
                         )
                     )

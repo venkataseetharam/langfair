@@ -28,7 +28,7 @@ class ResponseGenerator:
         self,
         langchain_llm: Any = None,
         suppressed_exceptions: Optional[
-            Union[Tuple[BaseException], BaseException]
+            Union[Tuple[BaseException], BaseException, Dict[BaseException, str]]
         ] = None,
         max_calls_per_min: Optional[int] = None,
     ) -> None:
@@ -41,22 +41,26 @@ class ResponseGenerator:
             A langchain llm object to get passed to chain constructor. User is responsible for specifying
             temperature and other relevant parameters to the constructor of their `langchain_llm` object.
 
-        suppressed_exceptions : tuple, default=None
-            Specifies which exceptions to handle as 'Unable to get response' rather than raising the
-            exception
+        suppressed_exceptions : tuple or dict, default=None
+            If a tuple,Specifies which exceptions to handle as 'Unable to get response' rather than raising the
+            exception. If a dict,enables users to specify exception-specific failure messages with keys being subclasses
+            of BaseException
 
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
         """
         self.cost_mapping = COST_MAPPING
-        self.failure_message = FAILURE_MESSAGE
         self.token_cost_date = TOKEN_COST_DATE
         self.llm = langchain_llm
-        if self._valid_exceptions(suppressed_exceptions):
+        if isinstance(suppressed_exceptions, Dict):
+            if self._valid_exceptions(tuple(self.suppressed_exceptions.keys())):
+                self.suppressed_exceptions = suppressed_exceptions
+        elif self._valid_exceptions(suppressed_exceptions):
             self.suppressed_exceptions = suppressed_exceptions
         else:
             raise TypeError(
-                "suppressed_exceptions must be a subclass of BaseException or a tuple of subclasses of BaseException"
+                """suppressed_exceptions must be a subclass of BaseException or a tuple of subclasses of BaseException 
+                or a Dict with keys being subclasses of BaseException"""
             )
 
         if max_calls_per_min:
@@ -208,7 +212,7 @@ class ResponseGenerator:
 
             'metadata' : dict
                 A dictionary containing metadata about the generation process.
-                
+
                 'non_completion_rate' : float
                     The rate at which the generation process did not complete.
                 'temperature' : float
@@ -233,9 +237,19 @@ class ResponseGenerator:
         chain = self._setup_langchain(system_prompt=system_prompt)
         tasks, duplicated_prompts = self._create_tasks(chain=chain, prompts=prompts)
         responses = await asyncio.gather(*tasks)
-        non_completion_rate = len(
-            [r for r in responses if r == self.failure_message]
-        ) / len(responses)
+        if isinstance(self.suppressed_exceptions, Dict):
+            non_completion_rate = len(
+                [
+                    r
+                    for r in responses
+                    if any(r == value for value in self.suppressed_exceptions.values())
+                    or r == FAILURE_MESSAGE
+                ]
+            ) / len(responses)
+        else:
+            non_completion_rate = len(
+                [r for r in responses if r == FAILURE_MESSAGE]
+            ) / len(responses)
 
         print("Responses successfully generated!")
         return {
@@ -286,8 +300,10 @@ class ResponseGenerator:
             return result
         except Exception as err:
             if self.suppressed_exceptions is not None:
-                if isinstance(err, self.suppressed_exceptions):
-                    return self.failure_message
+                if isinstance(self.suppressed_exceptions, Dict):
+                    return self.suppressed_exceptions.get(err, FAILURE_MESSAGE)
+                elif isinstance(err, self.suppressed_exceptions):
+                    return FAILURE_MESSAGE
             raise err
 
     @staticmethod
@@ -314,7 +330,7 @@ class ResponseGenerator:
     def _enforce_strings(texts: List[Any]) -> List[str]:
         """Enforce that all outputs are strings"""
         return [str(r) for r in texts]
-            
+
     @staticmethod
     def _num_tokens_from_messages(
         messages: List[Dict[str, str]], model: str, prompt: bool = True
