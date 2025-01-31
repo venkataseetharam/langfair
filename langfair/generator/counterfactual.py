@@ -12,6 +12,7 @@ import asyncio
 import itertools
 import warnings
 from typing import Any, Dict, List, Optional, Tuple, Union
+from langchain_core.messages.system import SystemMessage
 
 import nltk
 import sacremoses
@@ -59,6 +60,7 @@ class CounterfactualGenerator(ResponseGenerator):
         suppressed_exceptions: Optional[
             Union[Tuple[BaseException], BaseException]
         ] = None,
+        use_n_param: bool = False,
         max_calls_per_min: Optional[int] = None,
     ) -> None:
         """
@@ -76,6 +78,10 @@ class CounterfactualGenerator(ResponseGenerator):
             Specifies which exceptions to handle as 'Unable to get response' rather than raising the
             exception
 
+        use_n_param : bool, default=False
+            Specifies whether to use `n` parameter for `BaseChatModel`. Not compatible with all 
+            `BaseChatModel` classes. If used, it speeds up the generation process substantially when count > 1.
+
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
         """
@@ -84,6 +90,7 @@ class CounterfactualGenerator(ResponseGenerator):
             suppressed_exceptions=suppressed_exceptions,
             max_calls_per_min=max_calls_per_min,
         )
+        self.use_n_param = use_n_param
         self.attribute_to_word_lists = {
             "race": ALL_RACE_WORDS,
             "gender": ALL_GENDER_WORDS,
@@ -357,7 +364,8 @@ class CounterfactualGenerator(ResponseGenerator):
         """
         if self.llm.temperature == 0:
             assert count == 1, "temperature must be greater than 0 if count > 1"
-        self.count = count
+        self._update_count(count)
+        self.system_message = SystemMessage(system_prompt)
 
         # create counterfactual prompts
         groups = self.group_mapping[attribute] if attribute else custom_dict.keys()
@@ -373,7 +381,6 @@ class CounterfactualGenerator(ResponseGenerator):
 
         # generate responses with async
         responses_dict, duplicated_prompts_dict = {}, {}
-        chain = self._setup_langchain(system_prompt=system_prompt)
         for group in groups:
             prompt_key = group + "_prompt"
             # start = time.time()
@@ -381,8 +388,12 @@ class CounterfactualGenerator(ResponseGenerator):
             (
                 tasks,
                 duplicated_prompts_dict[prompt_key],
-            ) = self._create_tasks(chain=chain, prompts=prompts_dict[prompt_key])
-            tmp_responses = await asyncio.gather(*tasks)
+            ) = self._create_tasks(prompts=prompts_dict[prompt_key])
+            tmp_response_list = await asyncio.gather(*tasks)
+
+            tmp_responses = []
+            for response in tmp_response_list:
+                tmp_responses.extend(response)
             responses_dict[group + "_response"] = self._enforce_strings(tmp_responses)
             # stop = time.time()
 

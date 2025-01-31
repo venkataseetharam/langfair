@@ -44,6 +44,7 @@ class AutoEval:
         responses: Optional[List[str]] = None,
         langchain_llm: Any = None,
         suppressed_exceptions: Optional[Tuple] = None,
+        use_n_param: bool = False,
         metrics: MetricTypes = None,
         toxicity_device: str = "cpu",
         neutralize_tokens: str = True,
@@ -68,6 +69,10 @@ class AutoEval:
             Specifies which exceptions to handle as 'Unable to get response' rather than raising the
             exception
 
+        use_n_param : bool, default=False
+            Specifies whether to use `n` parameter for `BaseChatModel`. Not compatible with all 
+            `BaseChatModel` classes. If used, it speeds up the generation process substantially when count > 1.
+
         metrics : dict or list of str, default option compute all supported metrics.
             Specifies which metrics to evaluate.
 
@@ -87,6 +92,7 @@ class AutoEval:
         self.counterfactual_responses = None
         self.langchain_llm = langchain_llm
         self.metrics = self._validate_metrics(metrics)
+        self.use_n_param = use_n_param
         self.toxicity_device = toxicity_device
         self.neutralize_tokens = neutralize_tokens
         self.results = {'metrics': {}, 'data': {}}
@@ -95,11 +101,13 @@ class AutoEval:
             langchain_llm=langchain_llm,
             max_calls_per_min=max_calls_per_min,
             suppressed_exceptions=suppressed_exceptions,
+            use_n_param=use_n_param,
         )
         self.generator_object = ResponseGenerator(
             langchain_llm=langchain_llm,
             max_calls_per_min=max_calls_per_min,
             suppressed_exceptions=suppressed_exceptions,
+            use_n_param=use_n_param,
         )
 
     async def evaluate(
