@@ -58,7 +58,7 @@ class CounterfactualGenerator(ResponseGenerator):
         self,
         langchain_llm: Any = None,
         suppressed_exceptions: Optional[
-            Union[Tuple[BaseException], BaseException]
+            Union[Tuple[BaseException], BaseException, Dict[BaseException, str]]
         ] = None,
         max_calls_per_min: Optional[int] = None,
     ) -> None:

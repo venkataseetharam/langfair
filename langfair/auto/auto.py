@@ -43,7 +43,9 @@ class AutoEval:
         prompts: List[str],
         responses: Optional[List[str]] = None,
         langchain_llm: Any = None,
-        suppressed_exceptions: Optional[Tuple] = None,
+        suppressed_exceptions: Optional[
+            Union[Tuple[BaseException], BaseException, Dict[BaseException, str]]
+        ] = None,
         metrics: MetricTypes = None,
         toxicity_device: str = "cpu",
         neutralize_tokens: str = True,
