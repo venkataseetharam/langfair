@@ -61,7 +61,6 @@ class CounterfactualGenerator(ResponseGenerator):
             Union[Tuple[BaseException], BaseException]
         ] = None,
         max_calls_per_min: Optional[int] = None,
-        failure_message: str | Dict[BaseException, str] = FAILURE_MESSAGE,
     ) -> None:
         """
         Class for parsing and replacing protected attribute words.
@@ -74,22 +73,18 @@ class CounterfactualGenerator(ResponseGenerator):
             A langchain llm object to get passed to chain constructor. User is responsible for specifying
             temperature and other relevant parameters to the constructor of their `langchain_llm` object.
 
-        suppressed_exceptions : tuple, default=None
-            Specifies which exceptions to handle as 'Unable to get response' rather than raising the
-            exception
+        suppressed_exceptions : tuple or dict, default=None
+            If a tuple,Specifies which exceptions to handle as 'Unable to get response' rather than raising the
+            exception. If a dict,enables users to specify exception-specific failure messages with keys being subclasses
+            of BaseException
 
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
-
-        failure_message: str | Dict[BaseException, str], default=FAILURE_MESSAGE(defined in langfair/constants/cost_data.py)
-            Enables users to specify exception-specific failure messages that can either be a dictionary with keys being exceptions
-            and values being strings specifying  the failure message or just a string that is the same for all exceptions
         """
         super().__init__(
             langchain_llm=langchain_llm,
             suppressed_exceptions=suppressed_exceptions,
             max_calls_per_min=max_calls_per_min,
-            failure_message=failure_message,
         )
         self.attribute_to_word_lists = {
             "race": ALL_RACE_WORDS,
@@ -393,23 +388,23 @@ class CounterfactualGenerator(ResponseGenerator):
             responses_dict[group + "_response"] = self._enforce_strings(tmp_responses)
             # stop = time.time()
 
-        # if self.failure_message is a string
-        if isinstance(self.failure_message, str):
+        if isinstance(self.suppressed_exceptions, Dict):
             non_completion_rate = len(
                 [
                     i
                     for i, vals in enumerate(zip(responses_dict.values()))
-                    if self.failure_message in vals
+                    if any(
+                        value in vals for value in self.suppressed_exceptions.values()
+                    )
+                    or FAILURE_MESSAGE in vals
                 ]
             ) / len(list(responses_dict.values())[0])
-        # if self.failure_message is a dict
         else:
             non_completion_rate = len(
                 [
                     i
                     for i, vals in enumerate(zip(responses_dict.values()))
-                    if any(value in vals for value in self.failure_message.values())
-                    or FAILURE_MESSAGE in vals
+                    if FAILURE_MESSAGE in vals
                 ]
             ) / len(list(responses_dict.values())[0])
 

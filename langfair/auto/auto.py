@@ -48,7 +48,6 @@ class AutoEval:
         toxicity_device: str = "cpu",
         neutralize_tokens: str = True,
         max_calls_per_min: Optional[int] = None,
-        failure_message: str | Dict[BaseException, str] = FAILURE_MESSAGE,
     ) -> None:
         """
         This class calculates all toxicity, stereotype, and counterfactual metrics support by langfair
@@ -65,9 +64,10 @@ class AutoEval:
             A langchain llm object to get passed to chain constructor. User is responsible for specifying
             temperature and other relevant parameters to the constructor of their `langchain_llm` object.
 
-        suppressed_exceptions : tuple, default=None
-            Specifies which exceptions to handle as 'Unable to get response' rather than raising the
-            exception
+        suppressed_exceptions : tuple or dict, default=None
+            If a tuple,Specifies which exceptions to handle as 'Unable to get response' rather than raising the
+            exception. If a dict,enables users to specify exception-specific failure messages with keys being subclasses
+            of BaseException
 
         metrics : dict or list of str, default option compute all supported metrics.
             Specifies which metrics to evaluate.
@@ -82,11 +82,6 @@ class AutoEval:
 
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
-
-        failure_message: str | Dict[BaseException, str], default=FAILURE_MESSAGE(defined in langfair/constants/cost_data.py)
-            Enables users to specify exception-specific failure messages that can either be a dictionary with keys being exceptions
-            and values being strings specifying  the failure message or just a string that is the same for all exceptions
-
         """
         self.prompts = self._validate_list_type(prompts)
         self.responses = self._validate_list_type(responses)
@@ -96,19 +91,16 @@ class AutoEval:
         self.toxicity_device = toxicity_device
         self.neutralize_tokens = neutralize_tokens
         self.results = {"metrics": {}, "data": {}}
-        self.failure_message = failure_message
 
         self.cf_generator_object = CounterfactualGenerator(
             langchain_llm=langchain_llm,
             max_calls_per_min=max_calls_per_min,
             suppressed_exceptions=suppressed_exceptions,
-            failure_message=failure_message,
         )
         self.generator_object = ResponseGenerator(
             langchain_llm=langchain_llm,
             max_calls_per_min=max_calls_per_min,
             suppressed_exceptions=suppressed_exceptions,
-            failure_message=failure_message,
         )
 
     async def evaluate(
@@ -244,21 +236,23 @@ class AutoEval:
                         group2_response = self.counterfactual_responses[attribute][
                             "data"
                         ][group2 + "_response"]
-                        fm = self.cf_generator_object.failure_message
-                        if isinstance(fm, str):
-                            successful_response_index = [
-                                i
-                                for i in range(len(group1_response))
-                                if group1_response[i] != fm and group2_response[i] != fm
-                            ]
-                        else:
-                            failure_messages = set(self.failure_message.values())
+                        # se stands for suppressed_exceptions
+                        se = self.cf_generator_object.suppressed_exceptions
+                        if isinstance(se, Dict):
+                            failure_messages = set(self.suppressed_exceptions.values())
                             failure_messages.add(FAILURE_MESSAGE)
                             successful_response_index = [
                                 i
                                 for i in range(len(group1_response))
                                 if group1_response[i] not in failure_messages
                                 and group2_response[i] not in failure_messages
+                            ]
+                        else:
+                            successful_response_index = [
+                                i
+                                for i in range(len(group1_response))
+                                if group1_response[i] != FAILURE_MESSAGE
+                                and group2_response[i] != FAILURE_MESSAGE
                             ]
                         cf_group_results = counterfactual_object.evaluate(
                             texts1=[
