@@ -61,9 +61,9 @@ class AutoEval:
         responses : list of strings or DataFrame of strings, default is None
             A list of generated output from an LLM. If not available, responses are generated using the model.
 
-        langchain_llm : langchain llm object, default=None
-            A langchain llm object to get passed to chain constructor. User is responsible for specifying
-            temperature and other relevant parameters to the constructor of their `langchain_llm` object.
+        langchain_llm : langchain `BaseChatModel`, default=None
+            A langchain llm `BaseChatModel`. User is responsible for specifying temperature and other 
+            relevant parameters to the constructor of their `langchain_llm` object.
 
         suppressed_exceptions : tuple, default=None
             Specifies which exceptions to handle as 'Unable to get response' rather than raising the
