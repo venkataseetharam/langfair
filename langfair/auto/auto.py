@@ -46,6 +46,7 @@ class AutoEval:
         suppressed_exceptions: Optional[
             Union[Tuple[BaseException], BaseException, Dict[BaseException, str]]
         ] = None,
+        use_n_param: bool = True,
         metrics: MetricTypes = None,
         toxicity_device: str = "cpu",
         neutralize_tokens: str = True,
@@ -62,14 +63,19 @@ class AutoEval:
         responses : list of strings or DataFrame of strings, default is None
             A list of generated output from an LLM. If not available, responses are generated using the model.
 
-        langchain_llm : langchain llm object, default=None
-            A langchain llm object to get passed to chain constructor. User is responsible for specifying
-            temperature and other relevant parameters to the constructor of their `langchain_llm` object.
+        langchain_llm : langchain `BaseLanguageModel`, default=None
+            A langchain llm `BaseLanguageModel`. User is responsible for specifying temperature and other 
+            relevant parameters to the constructor of their `langchain_llm` object.
 
         suppressed_exceptions : tuple or dict, default=None
             If a tuple,Specifies which exceptions to handle as 'Unable to get response' rather than raising the
             exception. If a dict,enables users to specify exception-specific failure messages with keys being subclasses
             of BaseException
+
+        use_n_param : bool, default=True
+            Specifies whether to use `n` parameter for `BaseLanguageModel`. Not compatible with all 
+            `BaseLanguageModel` classes. If used, it speeds up the generation process substantially when count > 1.
+            Tries by default and switches to False if `n` cannot be utilized.
 
         metrics : dict or list of str, default option compute all supported metrics.
             Specifies which metrics to evaluate.
@@ -90,6 +96,7 @@ class AutoEval:
         self.counterfactual_responses = None
         self.langchain_llm = langchain_llm
         self.metrics = self._validate_metrics(metrics)
+        self.use_n_param = use_n_param
         self.toxicity_device = toxicity_device
         self.neutralize_tokens = neutralize_tokens
         self.results = {"metrics": {}, "data": {}}
@@ -98,11 +105,13 @@ class AutoEval:
             langchain_llm=langchain_llm,
             max_calls_per_min=max_calls_per_min,
             suppressed_exceptions=suppressed_exceptions,
+            use_n_param=use_n_param,
         )
         self.generator_object = ResponseGenerator(
             langchain_llm=langchain_llm,
             max_calls_per_min=max_calls_per_min,
             suppressed_exceptions=suppressed_exceptions,
+            use_n_param=use_n_param,
         )
 
     async def evaluate(
@@ -238,24 +247,9 @@ class AutoEval:
                         group2_response = self.counterfactual_responses[attribute][
                             "data"
                         ][group2 + "_response"]
-                        # se stands for suppressed_exceptions
-                        se = self.cf_generator_object.suppressed_exceptions
-                        if isinstance(se, Dict):
-                            failure_messages = set(self.suppressed_exceptions.values())
-                            failure_messages.add(FAILURE_MESSAGE)
-                            successful_response_index = [
-                                i
-                                for i in range(len(group1_response))
-                                if group1_response[i] not in failure_messages
-                                and group2_response[i] not in failure_messages
-                            ]
-                        else:
-                            successful_response_index = [
-                                i
-                                for i in range(len(group1_response))
-                                if group1_response[i] != FAILURE_MESSAGE
-                                and group2_response[i] != FAILURE_MESSAGE
-                            ]
+                        successful_response_index = self._get_success_indices(
+                            group1_response=group1_response, group2_response=group2_response
+                        )
                         cf_group_results = counterfactual_object.evaluate(
                             texts1=[
                                 group1_response[i] for i in successful_response_index
@@ -316,6 +310,28 @@ class AutoEval:
         with open(file_name, "w+") as file:
             # Writing data to a file
             file.writelines(result_list)
+
+    def _get_success_indices(
+        self, group1_response: List[str], group2_response: List[str]
+    ) -> List[any]:
+        se = self.cf_generator_object.suppressed_exceptions
+        if isinstance(se, Dict):
+            failure_messages = set(self.suppressed_exceptions.values())
+            failure_messages.add(FAILURE_MESSAGE)
+            successful_response_index = [
+                i
+                for i in range(len(group1_response))
+                if group1_response[i] not in failure_messages
+                and group2_response[i] not in failure_messages
+            ]
+        else:
+            successful_response_index = [
+                i
+                for i in range(len(group1_response))
+                if group1_response[i] != FAILURE_MESSAGE
+                and group2_response[i] != FAILURE_MESSAGE
+            ]
+        return successful_response_index
 
     def _create_result_list(self, bold_headings=True) -> List[str]:
         """Helper function for `print_results` method."""

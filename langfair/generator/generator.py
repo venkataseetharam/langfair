@@ -17,8 +17,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import langchain_core
 import numpy as np
 import tiktoken
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages.human import HumanMessage
+from langchain_core.messages.system import SystemMessage
 
 from langfair.constants.cost_data import COST_MAPPING, FAILURE_MESSAGE, TOKEN_COST_DATE
 
@@ -30,6 +30,7 @@ class ResponseGenerator:
         suppressed_exceptions: Optional[
             Union[Tuple[BaseException], BaseException, Dict[BaseException, str]]
         ] = None,
+        use_n_param: bool = True,
         max_calls_per_min: Optional[int] = None,
     ) -> None:
         """
@@ -37,14 +38,19 @@ class ResponseGenerator:
 
         Parameters
         ----------
-        langchain_llm : langchain llm object, default=None
-            A langchain llm object to get passed to chain constructor. User is responsible for specifying
-            temperature and other relevant parameters to the constructor of their `langchain_llm` object.
+        langchain_llm : langchain `BaseLanguageModel`, default=None
+            A langchain llm `BaseLanguageModel`. User is responsible for specifying temperature and other 
+            relevant parameters to the constructor of their `langchain_llm` object.
 
         suppressed_exceptions : tuple or dict, default=None
             If a tuple,Specifies which exceptions to handle as 'Unable to get response' rather than raising the
             exception. If a dict,enables users to specify exception-specific failure messages with keys being subclasses
             of BaseException
+
+        use_n_param : bool, default=True
+            Specifies whether to use `n` parameter for `BaseChatModel`. Not compatible with all 
+            `BaseChatModel` classes. If used, it speeds up the generation process substantially when count > 1.
+            Tries by default and switches to False if `n` cannot be utilized.
 
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
@@ -52,8 +58,9 @@ class ResponseGenerator:
         self.cost_mapping = COST_MAPPING
         self.token_cost_date = TOKEN_COST_DATE
         self.llm = langchain_llm
+        self.use_n_param = use_n_param
         if isinstance(suppressed_exceptions, Dict):
-            if self._valid_exceptions(tuple(self.suppressed_exceptions.keys())):
+            if self._valid_exceptions(tuple(suppressed_exceptions.keys())):
                 self.suppressed_exceptions = suppressed_exceptions
         elif self._valid_exceptions(suppressed_exceptions):
             self.suppressed_exceptions = suppressed_exceptions
@@ -212,7 +219,7 @@ class ResponseGenerator:
 
             'metadata' : dict
                 A dictionary containing metadata about the generation process.
-
+                
                 'non_completion_rate' : float
                     The rate at which the generation process did not complete.
                 'temperature' : float
@@ -222,8 +229,8 @@ class ResponseGenerator:
                 'system_prompt' : str
                     The system prompt used for generating responses
         """
-        assert isinstance(self.llm, langchain_core.runnables.base.Runnable), """
-            langchain_llm must be an instance of langchain_core.runnables.base.Runnable
+        assert isinstance(self.llm, langchain_core.language_models.chat_models.BaseLanguageModel), """
+            langchain_llm must be an instance of langchain_core.language_models.chat_models.BaseLanguageModel
         """
         assert all(
             isinstance(prompt, str) for prompt in prompts
@@ -231,12 +238,93 @@ class ResponseGenerator:
         print(f"Generating {count} responses per prompt...")
         if self.llm.temperature == 0:
             assert count == 1, "temperature must be greater than 0 if count > 1"
-        self.count = count
+        if not ((count > 1) and (hasattr(self.llm, "n"))):
+            self.use_n_param = False
+        self._update_count(count)
+        self.system_message = SystemMessage(system_prompt)
 
         # set up langchain and generate asynchronously
-        chain = self._setup_langchain(system_prompt=system_prompt)
-        tasks, duplicated_prompts = self._create_tasks(chain=chain, prompts=prompts)
-        responses = await asyncio.gather(*tasks)
+        tasks, duplicated_prompts = self._create_tasks(prompts=prompts)
+        response_lists = await asyncio.gather(*tasks)
+
+        responses = []
+        for response in response_lists:
+            responses.extend(response)
+
+        print("Responses successfully generated!")
+        return {
+            "data": {
+                "prompt": self._enforce_strings(duplicated_prompts),
+                "response": self._enforce_strings(responses),
+            },
+            "metadata": {
+                "non_completion_rate": self._calc_noncompletion_rate(responses),
+                "system_prompt": system_prompt,
+                "temperature": self.llm.temperature,
+                "count": self.count,
+            },
+        }
+
+    def _update_count(self, count: int) -> None:
+        """Updates self.count parameter and self.llm as necessary"""
+        self.count = count
+        if self.use_n_param:
+            self.llm.n = count
+
+    def _create_tasks(
+        self,
+        prompts: List[str],
+    ) -> Tuple[List[Any], List[str]]:
+        """
+        Creates a list of async tasks and returns duplicated prompt list
+        with each prompt duplicated `count` times
+        """
+        duplicated_prompts = [
+            prompt for prompt, i in itertools.product(prompts, range(self.count))
+        ]
+        if self.use_n_param:
+            try:
+                tasks = [
+                    self._async_api_call(
+                        prompt=prompt,
+                        count=self.count
+                    )
+                    for prompt in prompts
+                ]
+            except ValueError:
+                self.use_n_param = False
+                self.llm.n = 1
+        if not self.use_n_param:
+            tasks = [
+                self._async_api_call(
+                    prompt=prompt, count=1
+                )
+                for prompt in duplicated_prompts
+            ]
+        return tasks, duplicated_prompts
+
+    async def _async_api_call(
+        self, prompt: str, count: int = 1
+    ) -> List[Any]:
+        """Generates responses asynchronously using a BaseLanguageModel object"""
+        messages = [self.system_message, HumanMessage(prompt)]
+        try:
+            result = await self.llm.agenerate([messages])
+            generations = [result.generations[0][i].text for i in range(count)]
+            if len(generations) != count:
+                raise ValueError("Incorrect number of generations")
+            return generations
+        except Exception as err:
+            if self.suppressed_exceptions is not None:
+                if isinstance(self.suppressed_exceptions, Dict):
+                    if isinstance(err, tuple(self.suppressed_exceptions.keys())):
+                        return [self.suppressed_exceptions.get(type(err))] * count
+                elif isinstance(err, self.suppressed_exceptions):
+                    return [FAILURE_MESSAGE] * count
+            raise err
+
+    def _calc_noncompletion_rate(self, responses: List[str]) -> float:
+        """Compute noncompletion rate"""
         if isinstance(self.suppressed_exceptions, Dict):
             non_completion_rate = len(
                 [
@@ -250,61 +338,7 @@ class ResponseGenerator:
             non_completion_rate = len(
                 [r for r in responses if r == FAILURE_MESSAGE]
             ) / len(responses)
-
-        print("Responses successfully generated!")
-        return {
-            "data": {
-                "prompt": self._enforce_strings(duplicated_prompts),
-                "response": self._enforce_strings(responses),
-            },
-            "metadata": {
-                "non_completion_rate": non_completion_rate,
-                "system_prompt": system_prompt,
-                "temperature": self.llm.temperature,
-                "count": self.count,
-            },
-        }
-
-    def _setup_langchain(self, system_prompt: str) -> Any:
-        """Sets up langchain `RunnableSequence` object"""
-        chat_prompt = ChatPromptTemplate.from_messages(
-            [
-                ("system", system_prompt),
-                ("human", "{text}"),
-            ]
-        )
-        return chat_prompt | self.llm | StrOutputParser()
-
-    def _create_tasks(
-        self,
-        chain: Any,
-        prompts: List[str],
-    ) -> Tuple[List[Any], List[str]]:
-        """
-        Creates a list of async tasks and returns duplicated prompt list
-        with each prompt duplicated `count` times
-        """
-        duplicated_prompts = [
-            prompt for prompt, i in itertools.product(prompts, range(self.count))
-        ]
-        tasks = [
-            self._async_api_call(chain=chain, prompt=prompt)
-            for prompt in duplicated_prompts
-        ]
-        return tasks, duplicated_prompts
-
-    async def _async_api_call(self, chain: Any, prompt: str) -> List[Any]:
-        """Generates responses asynchronously using an RunnableSequence object"""
-        try:
-            result = await chain.ainvoke([prompt])
-            return result
-        except Exception as err:
-            if self.suppressed_exceptions is not None:
-                if isinstance(self.suppressed_exceptions, Dict):
-                    return self.suppressed_exceptions.get(err, FAILURE_MESSAGE)
-                elif isinstance(err, self.suppressed_exceptions):
-                    return FAILURE_MESSAGE
-            raise err
+        return non_completion_rate
 
     @staticmethod
     def _valid_exceptions(
