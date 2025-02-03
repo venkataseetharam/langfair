@@ -249,22 +249,9 @@ class AutoEval:
                         ][group2 + "_response"]
                         # se stands for suppressed_exceptions
                         se = self.cf_generator_object.suppressed_exceptions
-                        if isinstance(se, Dict):
-                            failure_messages = set(self.suppressed_exceptions.values())
-                            failure_messages.add(FAILURE_MESSAGE)
-                            successful_response_index = [
-                                i
-                                for i in range(len(group1_response))
-                                if group1_response[i] not in failure_messages
-                                and group2_response[i] not in failure_messages
-                            ]
-                        else:
-                            successful_response_index = [
-                                i
-                                for i in range(len(group1_response))
-                                if group1_response[i] != FAILURE_MESSAGE
-                                and group2_response[i] != FAILURE_MESSAGE
-                            ]
+                        successful_response_index = self._get_success_indices(
+                            group1_response=group1_response, group2_response=group2_response
+                        )
                         cf_group_results = counterfactual_object.evaluate(
                             texts1=[
                                 group1_response[i] for i in successful_response_index
@@ -325,6 +312,27 @@ class AutoEval:
         with open(file_name, "w+") as file:
             # Writing data to a file
             file.writelines(result_list)
+
+    def _get_success_indices(
+        self, group1_response: List[str], group2_response: List[str]
+    ) -> List[any]:
+        if isinstance(se, Dict):
+            failure_messages = set(self.suppressed_exceptions.values())
+            failure_messages.add(FAILURE_MESSAGE)
+            successful_response_index = [
+                i
+                for i in range(len(group1_response))
+                if group1_response[i] not in failure_messages
+                and group2_response[i] not in failure_messages
+            ]
+        else:
+            successful_response_index = [
+                i
+                for i in range(len(group1_response))
+                if group1_response[i] != FAILURE_MESSAGE
+                and group2_response[i] != FAILURE_MESSAGE
+            ]
+        return successful_response_index
 
     def _create_result_list(self, bold_headings=True) -> List[str]:
         """Helper function for `print_results` method."""
