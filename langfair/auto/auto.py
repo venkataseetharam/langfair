@@ -46,7 +46,7 @@ class AutoEval:
         suppressed_exceptions: Optional[
             Union[Tuple[BaseException], BaseException, Dict[BaseException, str]]
         ] = None,
-        use_n_param: bool = False,
+        use_n_param: bool = True,
         metrics: MetricTypes = None,
         toxicity_device: str = "cpu",
         neutralize_tokens: str = True,
@@ -63,8 +63,8 @@ class AutoEval:
         responses : list of strings or DataFrame of strings, default is None
             A list of generated output from an LLM. If not available, responses are generated using the model.
 
-        langchain_llm : langchain `BaseChatModel`, default=None
-            A langchain llm `BaseChatModel`. User is responsible for specifying temperature and other 
+        langchain_llm : langchain `BaseLanguageModel`, default=None
+            A langchain llm `BaseLanguageModel`. User is responsible for specifying temperature and other 
             relevant parameters to the constructor of their `langchain_llm` object.
 
         suppressed_exceptions : tuple or dict, default=None
@@ -72,9 +72,10 @@ class AutoEval:
             exception. If a dict,enables users to specify exception-specific failure messages with keys being subclasses
             of BaseException
 
-        use_n_param : bool, default=False
-            Specifies whether to use `n` parameter for `BaseChatModel`. Not compatible with all 
-            `BaseChatModel` classes. If used, it speeds up the generation process substantially when count > 1.
+        use_n_param : bool, default=True
+            Specifies whether to use `n` parameter for `BaseLanguageModel`. Not compatible with all 
+            `BaseLanguageModel` classes. If used, it speeds up the generation process substantially when count > 1.
+            Tries by default and switches to False if `n` cannot be utilized.
 
         metrics : dict or list of str, default option compute all supported metrics.
             Specifies which metrics to evaluate.

@@ -12,10 +12,10 @@ import asyncio
 import itertools
 import warnings
 from typing import Any, Dict, List, Optional, Tuple, Union
-from langchain_core.messages.system import SystemMessage
 
 import nltk
 import sacremoses
+from langchain_core.messages.system import SystemMessage
 from nltk.tokenize import word_tokenize
 
 from langfair.constants.cost_data import FAILURE_MESSAGE
@@ -61,7 +61,7 @@ class CounterfactualGenerator(ResponseGenerator):
         suppressed_exceptions: Optional[
             Union[Tuple[BaseException], BaseException, Dict[BaseException, str]]
         ] = None,
-        use_n_param: bool = False,
+        use_n_param: bool = True,
         max_calls_per_min: Optional[int] = None,
     ) -> None:
         """
@@ -71,8 +71,8 @@ class CounterfactualGenerator(ResponseGenerator):
 
         Parameters
         ----------
-        langchain_llm : langchain `BaseChatModel`, default=None
-            A langchain llm `BaseChatModel`. User is responsible for specifying temperature and other 
+        langchain_llm : langchain `BaseLanguageModel`, default=None
+            A langchain llm `BaseLanguageModel`. User is responsible for specifying temperature and other 
             relevant parameters to the constructor of their `langchain_llm` object.
 
         suppressed_exceptions : tuple or dict, default=None
@@ -80,9 +80,10 @@ class CounterfactualGenerator(ResponseGenerator):
             exception. If a dict,enables users to specify exception-specific failure messages with keys being subclasses
             of BaseException
 
-        use_n_param : bool, default=False
-            Specifies whether to use `n` parameter for `BaseChatModel`. Not compatible with all 
-            `BaseChatModel` classes. If used, it speeds up the generation process substantially when count > 1.
+        use_n_param : bool, default=True
+            Specifies whether to use `n` parameter for `BaseLanguageModel`. Not compatible with all 
+            `BaseLanguageModel` classes. If used, it speeds up the generation process substantially when count > 1.
+            Tries by default and switches to False if `n` cannot be utilized.
 
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
@@ -399,26 +400,6 @@ class CounterfactualGenerator(ResponseGenerator):
             responses_dict[group + "_response"] = self._enforce_strings(tmp_responses)
             # stop = time.time()
 
-        if isinstance(self.suppressed_exceptions, Dict):
-            non_completion_rate = len(
-                [
-                    i
-                    for i, vals in enumerate(zip(responses_dict.values()))
-                    if any(
-                        value in vals for value in self.suppressed_exceptions.values()
-                    )
-                    or FAILURE_MESSAGE in vals
-                ]
-            ) / len(list(responses_dict.values())[0])
-        else:
-            non_completion_rate = len(
-                [
-                    i
-                    for i, vals in enumerate(zip(responses_dict.values()))
-                    if FAILURE_MESSAGE in vals
-                ]
-            ) / len(list(responses_dict.values())[0])
-
         print("Responses successfully generated!")
         return {
             "data": {
@@ -426,7 +407,7 @@ class CounterfactualGenerator(ResponseGenerator):
                 **responses_dict,
             },
             "metadata": {
-                "non_completion_rate": non_completion_rate,
+                "non_completion_rate": self._calc_noncompletion_rate(responses_dict),
                 "system_prompt": system_prompt,
                 "temperature": self.llm.temperature,
                 "count": self.count,
@@ -614,6 +595,29 @@ class CounterfactualGenerator(ResponseGenerator):
             output_dict[key] = self.detokenizer.detokenize(output_dict[key])
 
         return output_dict
+
+    def _calc_noncompletion_rate(self, responses_dict: Dict[str, Any]) -> float:
+        """Computes noncompletion rate"""
+        if isinstance(self.suppressed_exceptions, Dict):
+            non_completion_rate = len(
+                [
+                    i
+                    for i, vals in enumerate(zip(responses_dict.values()))
+                    if any(
+                        value in vals for value in self.suppressed_exceptions.values()
+                    )
+                    or FAILURE_MESSAGE in vals
+                ]
+            ) / len(list(responses_dict.values())[0])
+        else:
+            non_completion_rate = len(
+                [
+                    i
+                    for i, vals in enumerate(zip(responses_dict.values()))
+                    if FAILURE_MESSAGE in vals
+                ]
+            ) / len(list(responses_dict.values())[0])
+        return non_completion_rate
 
     @staticmethod
     def _get_race_subsequences(text: str) -> List[str]:
