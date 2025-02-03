@@ -247,8 +247,6 @@ class AutoEval:
                         group2_response = self.counterfactual_responses[attribute][
                             "data"
                         ][group2 + "_response"]
-                        # se stands for suppressed_exceptions
-                        se = self.cf_generator_object.suppressed_exceptions
                         successful_response_index = self._get_success_indices(
                             group1_response=group1_response, group2_response=group2_response
                         )
@@ -316,6 +314,7 @@ class AutoEval:
     def _get_success_indices(
         self, group1_response: List[str], group2_response: List[str]
     ) -> List[any]:
+        se = self.cf_generator_object.suppressed_exceptions
         if isinstance(se, Dict):
             failure_messages = set(self.suppressed_exceptions.values())
             failure_messages.add(FAILURE_MESSAGE)
