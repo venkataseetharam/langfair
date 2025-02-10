@@ -23,7 +23,7 @@ from langchain_core.messages.system import SystemMessage
 from langfair.constants.cost_data import COST_MAPPING, FAILURE_MESSAGE, TOKEN_COST_DATE
 
 
-N_PARAM_WARNING = """Use of `n` parameter is not compatible with all BaseChatModels. Ensure your BaseChatModel is compatible."""
+N_PARAM_WARNING = """Use of `use_n_param` parameter is not compatible with all BaseChatModels. Ensure your BaseChatModel is compatible."""
 
 class ResponseGenerator:
     def __init__(
