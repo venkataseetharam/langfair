@@ -23,6 +23,8 @@ from langchain_core.messages.system import SystemMessage
 from langfair.constants.cost_data import COST_MAPPING, FAILURE_MESSAGE, TOKEN_COST_DATE
 
 
+N_PARAM_WARNING = """Use of `n` parameter is not compatible with all BaseChatModels. Ensure your BaseChatModel is compatible."""
+
 class ResponseGenerator:
     def __init__(
         self,
@@ -234,15 +236,18 @@ class ResponseGenerator:
         assert all(
             isinstance(prompt, str) for prompt in prompts
         ), "If using custom prompts, please ensure `prompts` is of type list[str]"
+        
+        if self.use_n_param:
+            warnings.warn(N_PARAM_WARNING)
+            if not ((count > 1) and (hasattr(self.llm, "n"))):
+                self.use_n_param = False
+                
         print(f"Generating {count} responses per prompt...")
         if self.llm.temperature == 0:
             assert count == 1, "temperature must be greater than 0 if count > 1"
-        if not ((count > 1) and (hasattr(self.llm, "n"))):
-            self.use_n_param = False
         self._update_count(count)
         self.system_message = SystemMessage(system_prompt)
 
-        # set up langchain and generate asynchronously
         tasks, duplicated_prompts = self._create_tasks(prompts=prompts)
         response_lists = await asyncio.gather(*tasks)
 
@@ -269,6 +274,8 @@ class ResponseGenerator:
         self.count = count
         if self.use_n_param:
             self.llm.n = count
+        elif hasattr(self.llm, "n"):
+            self.llm.n = 1
 
     def _create_tasks(
         self,
