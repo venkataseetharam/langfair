@@ -23,6 +23,8 @@ from langchain_core.messages.system import SystemMessage
 from langfair.constants.cost_data import COST_MAPPING, FAILURE_MESSAGE, TOKEN_COST_DATE
 
 
+N_PARAM_WARNING = """Use of `n` parameter is not compatible with all BaseChatModels. Ensure your BaseChatModel is compatible."""
+
 class ResponseGenerator:
     def __init__(
         self,
@@ -30,7 +32,7 @@ class ResponseGenerator:
         suppressed_exceptions: Optional[
             Union[Tuple[BaseException], BaseException, Dict[BaseException, str]]
         ] = None,
-        use_n_param: bool = True,
+        use_n_param: bool = False,
         max_calls_per_min: Optional[int] = None,
     ) -> None:
         """
@@ -38,8 +40,8 @@ class ResponseGenerator:
 
         Parameters
         ----------
-        langchain_llm : langchain `BaseLanguageModel`, default=None
-            A langchain llm `BaseLanguageModel`. User is responsible for specifying temperature and other 
+        langchain_llm : langchain `BaseChatModel`, default=None
+            A langchain llm `BaseChatModel`. User is responsible for specifying temperature and other 
             relevant parameters to the constructor of their `langchain_llm` object.
 
         suppressed_exceptions : tuple or dict, default=None
@@ -47,10 +49,9 @@ class ResponseGenerator:
             exception. If a dict,enables users to specify exception-specific failure messages with keys being subclasses
             of BaseException
 
-        use_n_param : bool, default=True
+        use_n_param : bool, default=False
             Specifies whether to use `n` parameter for `BaseChatModel`. Not compatible with all 
             `BaseChatModel` classes. If used, it speeds up the generation process substantially when count > 1.
-            Tries by default and switches to False if `n` cannot be utilized.
 
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
@@ -229,21 +230,24 @@ class ResponseGenerator:
                 'system_prompt' : str
                     The system prompt used for generating responses
         """
-        assert isinstance(self.llm, langchain_core.language_models.chat_models.BaseLanguageModel), """
-            langchain_llm must be an instance of langchain_core.language_models.chat_models.BaseLanguageModel
+        assert isinstance(self.llm, langchain_core.language_models.chat_models.BaseChatModel), """
+            langchain_llm must be an instance of langchain_core.language_models.chat_models.BaseChatModel
         """
         assert all(
             isinstance(prompt, str) for prompt in prompts
         ), "If using custom prompts, please ensure `prompts` is of type list[str]"
+        
+        if self.use_n_param:
+            warnings.warn(N_PARAM_WARNING)
+            if not ((count > 1) and (hasattr(self.llm, "n"))):
+                self.use_n_param = False
+                
         print(f"Generating {count} responses per prompt...")
         if self.llm.temperature == 0:
             assert count == 1, "temperature must be greater than 0 if count > 1"
-        if not ((count > 1) and (hasattr(self.llm, "n"))):
-            self.use_n_param = False
         self._update_count(count)
         self.system_message = SystemMessage(system_prompt)
 
-        # set up langchain and generate asynchronously
         tasks, duplicated_prompts = self._create_tasks(prompts=prompts)
         response_lists = await asyncio.gather(*tasks)
 
@@ -270,6 +274,8 @@ class ResponseGenerator:
         self.count = count
         if self.use_n_param:
             self.llm.n = count
+        elif hasattr(self.llm, "n"):
+            self.llm.n = 1
 
     def _create_tasks(
         self,

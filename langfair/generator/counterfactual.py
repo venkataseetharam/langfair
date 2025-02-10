@@ -61,7 +61,7 @@ class CounterfactualGenerator(ResponseGenerator):
         suppressed_exceptions: Optional[
             Union[Tuple[BaseException], BaseException, Dict[BaseException, str]]
         ] = None,
-        use_n_param: bool = True,
+        use_n_param: bool = False,
         max_calls_per_min: Optional[int] = None,
     ) -> None:
         """
@@ -71,8 +71,8 @@ class CounterfactualGenerator(ResponseGenerator):
 
         Parameters
         ----------
-        langchain_llm : langchain `BaseLanguageModel`, default=None
-            A langchain llm `BaseLanguageModel`. User is responsible for specifying temperature and other 
+        langchain_llm : langchain `BaseChatModel`, default=None
+            A langchain llm `BaseChatModel`. User is responsible for specifying temperature and other 
             relevant parameters to the constructor of their `langchain_llm` object.
 
         suppressed_exceptions : tuple or dict, default=None
@@ -80,10 +80,9 @@ class CounterfactualGenerator(ResponseGenerator):
             exception. If a dict,enables users to specify exception-specific failure messages with keys being subclasses
             of BaseException
 
-        use_n_param : bool, default=True
-            Specifies whether to use `n` parameter for `BaseLanguageModel`. Not compatible with all 
-            `BaseLanguageModel` classes. If used, it speeds up the generation process substantially when count > 1.
-            Tries by default and switches to False if `n` cannot be utilized.
+        use_n_param : bool, default=False
+            Specifies whether to use `n` parameter for `BaseChatModel`. Not compatible with all 
+            `BaseChatModel` classes. If used, it speeds up the generation process substantially when count > 1.
 
         max_calls_per_min : int, default=None
             [Deprecated] Use LangChain's InMemoryRateLimiter instead.
