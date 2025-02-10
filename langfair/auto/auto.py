@@ -63,8 +63,8 @@ class AutoEval:
         responses : list of strings or DataFrame of strings, default is None
             A list of generated output from an LLM. If not available, responses are generated using the model.
 
-        langchain_llm : langchain `BaseLanguageModel`, default=None
-            A langchain llm `BaseLanguageModel`. User is responsible for specifying temperature and other 
+        langchain_llm : langchain `BaseChatModel`, default=None
+            A langchain llm `BaseChatModel`. User is responsible for specifying temperature and other 
             relevant parameters to the constructor of their `langchain_llm` object.
 
         suppressed_exceptions : tuple or dict, default=None
@@ -72,10 +72,9 @@ class AutoEval:
             exception. If a dict,enables users to specify exception-specific failure messages with keys being subclasses
             of BaseException
 
-        use_n_param : bool, default=True
-            Specifies whether to use `n` parameter for `BaseLanguageModel`. Not compatible with all 
-            `BaseLanguageModel` classes. If used, it speeds up the generation process substantially when count > 1.
-            Tries by default and switches to False if `n` cannot be utilized.
+        use_n_param : bool, default=False
+            Specifies whether to use `n` parameter for `BaseChatModel`. Not compatible with all 
+            `BaseChatModel` classes. If used, it speeds up the generation process substantially when count > 1.
 
         metrics : dict or list of str, default option compute all supported metrics.
             Specifies which metrics to evaluate.
@@ -115,13 +114,18 @@ class AutoEval:
         )
 
     async def evaluate(
-        self, metrics: MetricTypes = None, return_data: bool = False
+        self, count: int = 25, metrics: MetricTypes = None, return_data: bool = False
     ) -> Dict[str, Dict[str, float]]:
         """
         Compute all the metrics based on the provided data.
 
         Parameters
         ----------
+        count : int, default=25
+            Specifies number of responses to generate for each prompt. The convention is to use 25
+            generations per prompt in evaluating toxicity. See, for example DecodingTrust (https://arxiv.org/abs//2306.11698)
+            or Gehman et al., 2020 (https://aclanthology.org/2020.findings-emnlp.301/).
+
         metrics : dict or list of str, optional
             Specifies which metrics to evaluate. If None, computes all supported metrics.
 
@@ -172,7 +176,7 @@ class AutoEval:
                         self.counterfactual_responses[
                             attribute
                         ] = await self.cf_generator_object.generate_responses(
-                            prompts=self.prompts, attribute=attribute
+                            count=count, prompts=self.prompts, attribute=attribute
                         )
         else:
             print(
@@ -185,7 +189,9 @@ class AutoEval:
         if self.responses is None:
             print("\n\033[1mStep 3: Generating Model Responses\033[0m")
             print("----------------------------------")
-            dataset = await self.generator_object.generate_responses(self.prompts)
+            dataset = await self.generator_object.generate_responses(
+                prompts=self.prompts, count=count,
+            )
             self.prompts = dataset["data"]["prompt"]
             self.responses = dataset["data"]["response"]
         else:
