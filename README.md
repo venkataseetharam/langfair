@@ -12,12 +12,16 @@
 
 LangFair is a comprehensive Python library designed for conducting bias and fairness assessments of large language model (LLM) use cases. This repository includes a comprehensive framework for [choosing bias and fairness metrics](https://github.com/cvs-health/langfair/tree/main#-choosing-bias-and-fairness-metrics-for-an-llm-use-case), along with [demo notebooks](https://github.com/cvs-health/langfair/tree/main/examples) and a [technical playbook](https://arxiv.org/abs/2407.10853) that discusses LLM bias and fairness risks, evaluation metrics, and best practices. 
 
-Explore our [documentation site](https://cvs-health.github.io/langfair/) for detailed instructions on using LangFair.
-
 ## 🚀 Why Choose LangFair?
 Static benchmark assessments, which are typically assumed to be sufficiently representative, often fall short in capturing the risks associated with all possible use cases of LLMs. These models are increasingly used in various applications, including recommendation systems, classification, text generation, and summarization. However, evaluating these models without considering use-case-specific prompts can lead to misleading assessments of their performance, especially regarding bias and fairness risks.
  
 LangFair addresses this gap by adopting a Bring Your Own Prompts (BYOP) approach, allowing users to tailor bias and fairness evaluations to their specific use cases. This ensures that the metrics computed reflect the true performance of the LLMs in real-world scenarios, where prompt-specific risks are critical. Additionally, LangFair's focus is on output-based metrics that are practical for governance audits and real-world testing, without needing access to internal model states.
+
+<p align="center">
+  <img src="./assets/images/langfair_graphic.png" />
+</p>
+
+**Note:** This diagram illustrates the workflow for assessing bias and fairness in text generation and summarization use cases.
 
 ## ⚡ Quickstart Guide
 ### (Optional) Create a virtual environment for using LangFair
