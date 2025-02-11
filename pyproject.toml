@@ -43,6 +43,7 @@ asyncio = "^3.4.3"
 sentence-transformers = "^2.7.0"
 typing = "<3.10"
 tiktoken = "^0.7.0"
+transformers = ">=4.48.0"
 
 [tool.poetry.group.dev.dependencies]
 langchain-openai = "^0.2.9"
