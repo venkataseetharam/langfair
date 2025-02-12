@@ -23,7 +23,11 @@ from langchain_core.messages.system import SystemMessage
 from langfair.constants.cost_data import COST_MAPPING, FAILURE_MESSAGE, TOKEN_COST_DATE
 
 
-N_PARAM_WARNING = """Use of `n` parameter is not compatible with all BaseChatModels. Ensure your BaseChatModel is compatible."""
+N_PARAM_WARNING = """
+The 'use_n_param' parameter may not be compatible with all BaseChatModel instances. 
+Please ensure that your specific BaseChatModel has an 'n' attribute and supports setting 'n' to a value up to 'count'.
+Note that some BaseChatModel instances only support 'n' up to a certain value. If 'count' exceeds this value, an error may occur.
+"""
 
 class ResponseGenerator:
     def __init__(
@@ -45,8 +49,8 @@ class ResponseGenerator:
             relevant parameters to the constructor of their `langchain_llm` object.
 
         suppressed_exceptions : tuple or dict, default=None
-            If a tuple,Specifies which exceptions to handle as 'Unable to get response' rather than raising the
-            exception. If a dict,enables users to specify exception-specific failure messages with keys being subclasses
+            If a tuple, specifies which exceptions to handle as 'Unable to get response' rather than raising the
+            exception. If a dict, enables users to specify exception-specific failure messages with keys being subclasses
             of BaseException
 
         use_n_param : bool, default=False
