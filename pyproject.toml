@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "langfair"
-version = "0.3.2"
+version = "0.4.0"
 description = "LangFair is a Python library for conducting use-case level LLM bias and fairness assessments"
 readme = "README.md"
 authors = ["Dylan Bouchard <dylan.bouchard@cvshealth.com>",
@@ -43,6 +43,7 @@ asyncio = "^3.4.3"
 sentence-transformers = "^2.7.0"
 typing = "<3.10"
 tiktoken = "^0.7.0"
+transformers = ">=4.48.0"
 
 [tool.poetry.group.dev.dependencies]
 langchain-openai = "^0.2.9"
@@ -50,6 +51,9 @@ pre-commit = "3.7.1"
 ruff = "^0.4.8"
 pytest = "^8.3.3"
 pytest-asyncio = "^0.24.0"
+ipykernel = "^6.29.5"
+ipywidgets = "^8.1.5"
+python-dotenv = "^1.0.1"
 
 [tool.poetry.group.docs.dependencies]
 sphinx = "7.3.7"
@@ -60,6 +64,7 @@ sphinx-gallery = "0.18.0"
 
 [tool.poetry.group.extra_llms.dependencies]
 langchain-mistralai = "^0.2.2"
+langchain-google-vertexai = "^2.0.13"
 
 [tool.ruff.lint]
 extend-select = ["I"] # lets Ruff catch and fix unsorted imports
