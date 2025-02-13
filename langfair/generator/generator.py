@@ -22,12 +22,12 @@ from langchain_core.messages.system import SystemMessage
 
 from langfair.constants.cost_data import COST_MAPPING, FAILURE_MESSAGE, TOKEN_COST_DATE
 
-
 N_PARAM_WARNING = """
 The 'use_n_param' parameter may not be compatible with all BaseChatModel instances. 
 Please ensure that your specific BaseChatModel has an 'n' attribute and supports setting 'n' to a value up to 'count'.
 Note that some BaseChatModel instances only support 'n' up to a certain value. If 'count' exceeds this value, an error may occur.
 """
+
 
 class ResponseGenerator:
     def __init__(
@@ -45,7 +45,7 @@ class ResponseGenerator:
         Parameters
         ----------
         langchain_llm : langchain `BaseChatModel`, default=None
-            A langchain llm `BaseChatModel`. User is responsible for specifying temperature and other 
+            A langchain llm `BaseChatModel`. User is responsible for specifying temperature and other
             relevant parameters to the constructor of their `langchain_llm` object.
 
         suppressed_exceptions : tuple or dict, default=None
@@ -54,7 +54,7 @@ class ResponseGenerator:
             of BaseException
 
         use_n_param : bool, default=False
-            Specifies whether to use `n` parameter for `BaseChatModel`. Not compatible with all 
+            Specifies whether to use `n` parameter for `BaseChatModel`. Not compatible with all
             `BaseChatModel` classes. If used, it speeds up the generation process substantially when count > 1.
 
         max_calls_per_min : int, default=None
@@ -224,7 +224,7 @@ class ResponseGenerator:
 
             'metadata' : dict
                 A dictionary containing metadata about the generation process.
-                
+
                 'non_completion_rate' : float
                     The rate at which the generation process did not complete.
                 'temperature' : float
@@ -234,18 +234,20 @@ class ResponseGenerator:
                 'system_prompt' : str
                     The system prompt used for generating responses
         """
-        assert isinstance(self.llm, langchain_core.language_models.chat_models.BaseChatModel), """
+        assert isinstance(
+            self.llm, langchain_core.language_models.chat_models.BaseChatModel
+        ), """
             langchain_llm must be an instance of langchain_core.language_models.chat_models.BaseChatModel
         """
         assert all(
             isinstance(prompt, str) for prompt in prompts
         ), "If using custom prompts, please ensure `prompts` is of type list[str]"
-        
+
         if self.use_n_param:
             warnings.warn(N_PARAM_WARNING)
             if not ((count > 1) and (hasattr(self.llm, "n"))):
                 self.use_n_param = False
-                
+
         print(f"Generating {count} responses per prompt...")
         if self.llm.temperature == 0:
             assert count == 1, "temperature must be greater than 0 if count > 1"
@@ -295,10 +297,7 @@ class ResponseGenerator:
         if self.use_n_param:
             try:
                 tasks = [
-                    self._async_api_call(
-                        prompt=prompt,
-                        count=self.count
-                    )
+                    self._async_api_call(prompt=prompt, count=self.count)
                     for prompt in prompts
                 ]
             except ValueError:
@@ -306,16 +305,12 @@ class ResponseGenerator:
                 self.llm.n = 1
         if not self.use_n_param:
             tasks = [
-                self._async_api_call(
-                    prompt=prompt, count=1
-                )
+                self._async_api_call(prompt=prompt, count=1)
                 for prompt in duplicated_prompts
             ]
         return tasks, duplicated_prompts
 
-    async def _async_api_call(
-        self, prompt: str, count: int = 1
-    ) -> List[Any]:
+    async def _async_api_call(self, prompt: str, count: int = 1) -> List[Any]:
         """Generates responses asynchronously using a BaseLanguageModel object"""
         messages = [self.system_message, HumanMessage(prompt)]
         try:
