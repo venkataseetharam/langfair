@@ -64,7 +64,7 @@ class AutoEval:
             A list of generated output from an LLM. If not available, responses are generated using the model.
 
         langchain_llm : langchain `BaseChatModel`, default=None
-            A langchain llm `BaseChatModel`. User is responsible for specifying temperature and other 
+            A langchain llm `BaseChatModel`. User is responsible for specifying temperature and other
             relevant parameters to the constructor of their `langchain_llm` object.
 
         suppressed_exceptions : tuple or dict, default=None
@@ -73,7 +73,7 @@ class AutoEval:
             of BaseException
 
         use_n_param : bool, default=False
-            Specifies whether to use `n` parameter for `BaseChatModel`. Not compatible with all 
+            Specifies whether to use `n` parameter for `BaseChatModel`. Not compatible with all
             `BaseChatModel` classes. If used, it speeds up the generation process substantially when count > 1.
 
         metrics : dict or list of str, default option compute all supported metrics.
@@ -190,7 +190,8 @@ class AutoEval:
             print("\n\033[1mStep 3: Generating Model Responses\033[0m")
             print("----------------------------------")
             dataset = await self.generator_object.generate_responses(
-                prompts=self.prompts, count=count,
+                prompts=self.prompts,
+                count=count,
             )
             self.prompts = dataset["data"]["prompt"]
             self.responses = dataset["data"]["response"]
@@ -254,7 +255,8 @@ class AutoEval:
                             "data"
                         ][group2 + "_response"]
                         successful_response_index = self._get_success_indices(
-                            group1_response=group1_response, group2_response=group2_response
+                            group1_response=group1_response,
+                            group2_response=group2_response,
                         )
                         cf_group_results = counterfactual_object.evaluate(
                             texts1=[
