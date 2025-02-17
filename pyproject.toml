@@ -41,6 +41,7 @@ detoxify = "^0.5.2"
 langchain = "^0.3.7"
 asyncio = "^3.4.3"
 sentence-transformers = "^2.7.0"
+typing = {version = "^3.7.4", python = "<3.10"}
 tiktoken = "^0.7.0"
 transformers = ">=4.48.0"
 
