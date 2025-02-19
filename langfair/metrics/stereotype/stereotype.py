@@ -86,20 +86,12 @@ class StereotypeMetrics:
         metric_values = {}
         for metric in self.metrics:
             if metric.name in ["Stereotype Classifier"]:
-                if return_data:
-                    tmp_value = metric.evaluate(
-                        responses=responses,
-                        prompts=prompts,
-                        return_data=return_data,
-                        categories=categories,
-                    )
-                else:
-                    tmp_value = metric.evaluate(
-                        responses=responses,
-                        prompts=prompts,
-                        return_data=return_data,
-                        categories=categories,
-                    )
+                tmp_value = metric.evaluate(
+                    responses=responses,
+                    prompts=prompts,
+                    return_data=return_data,
+                    categories=categories,
+                )
                 metric_values.update(tmp_value["metrics"])
             else:
                 metric_values[metric.name] = metric.evaluate(responses=responses)
