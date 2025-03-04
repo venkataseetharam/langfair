@@ -17,6 +17,8 @@ from typing import Any, List, Optional
 import numpy as np
 
 from langfair.metrics.counterfactual.metrics.baseclass.metrics import Metric
+from transformers import pipeline  # New: Import Hugging Face pipeline
+
 
 
 class SentimentBias(Metric):
@@ -64,8 +66,8 @@ class SentimentBias(Metric):
         """
         # TODO: Offer additional sentiment classifiers besides VaderSentiment
         assert classifier in [
-            "vader"
-        ], "langfair: Currently, only 'vader' classifier is supported."
+            "vader", "roberta"
+        ], "langfair: Currently, only 'vader' and 'roberta' classifiers are supported."
         assert sentiment in [
             "pos",
             "neg",
@@ -88,8 +90,10 @@ class SentimentBias(Metric):
 
         elif classifier == "vader":
             from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-
             self.classifier_instance = SentimentIntensityAnalyzer()
+
+        elif classifier == "roberta": #New: Adding Roberta
+            self.classifier_instance = pipeline("sentiment-analysis", model="siebert/sentiment-roberta-large-english")
 
     def evaluate(self, texts1: List[str], texts2: List[str]) -> float:
         """
@@ -150,9 +154,52 @@ class SentimentBias(Metric):
             scores = [self.classifier_instance.polarity_scores(text) for text in texts]
             return [score[self.sentiment] for score in scores]
 
+        elif self.classifier == "roberta":  #New: Sentiment score for Roberta
+            results = self.classifier_instance(texts, return_all_scores=True)
+            if self.sentiment == "pos":
+                return [r[1]["score"] for r in results]  # Positive sentiment is always at index 1
+            elif self.sentiment == "neg":
+                return [r[0]["score"] for r in results]  # Negative sentiment is always at index 0
+
     @staticmethod
     def _wasserstein_1_dist(array1, array2):
         """Compute Wasserstein-1 distance"""
         a1_sorted = np.sort(np.array(array1))
         a2_sorted = np.sort(np.array(array2))
         return np.mean(np.abs(a1_sorted - a2_sorted))
+
+"""Create an instance using the RoBERTa classifier for both positive and negative
+roberta_model_pos = SentimentBias(classifier="roberta", sentiment="pos")
+roberta_model_neg = SentimentBias(classifier="roberta", sentiment="neg")
+
+# Sample texts for comparison
+texts1 = [
+    "I love working at CVS!",
+    "The customer service was terrible.",
+    "The product is okay, but shipping is slow."
+]
+
+texts2 = [
+    "Working at CVS is amazing!",
+    "I had an awful experience with the customer support.",
+    "The delivery process is slow but the product is decent."
+]
+
+# Evaluate sentiment bias
+result_pos = roberta_model_pos.evaluate(texts1, texts2)
+result_neg = roberta_model_neg.evaluate(texts1, texts2)
+
+print("Sentiment Bias Result (Positive, RoBERTa):", result_pos)
+print("Sentiment Bias Result (Negative, RoBERTa):", result_neg)
+
+# Get sentiment scores for a set of texts
+scores_pos = roberta_model_pos._get_sentiment_scores(texts1)
+scores_neg = roberta_model_neg._get_sentiment_scores(texts1)
+
+# Display each text with its RoBERTa positive and negative sentiment scores
+for text, score_pos, score_neg in zip(texts1, scores_pos, scores_neg):
+    sentiment_label = "positive" if score_pos > score_neg else "negative"
+    confidence = max(score_pos, score_neg)
+    print(f"Text: {text}\nSentiment: {sentiment_label} (Confidence: {confidence})\n")
+"""
+
