@@ -40,7 +40,7 @@ class SentimentBias(Metric):
 
         Parameters
         ----------
-        classifier : {'vader','natural_language_api'}, default='vader'
+        classifier : {'vader','roberta'}, default='vader'
             The sentiment classifier used to calculate counterfactual sentiment bias.
 
         sentiment : {'neg','pos'}, default='neg'
