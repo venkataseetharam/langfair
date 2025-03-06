@@ -73,6 +73,11 @@ def test_senitement2():
     assert sentiment.evaluate(data["text1"], data["text2"]) == actual_results["test5"]
 
 
+def test_senitement3():
+    sentiment = SentimentBias(classifier="roberta")
+    assert sentiment.evaluate(data["text1"], data["text2"]) == actual_results["test7"]
+
+
 def test_CounterfactualMetrics():
     metrics = [
         "Rougel",
