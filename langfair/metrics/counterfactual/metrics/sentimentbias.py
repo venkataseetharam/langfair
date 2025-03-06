@@ -17,6 +17,8 @@ from typing import Any, List, Optional
 import numpy as np
 
 from langfair.metrics.counterfactual.metrics.baseclass.metrics import Metric
+from transformers import pipeline  # New: Import Hugging Face pipeline
+
 
 
 class SentimentBias(Metric):
@@ -64,8 +66,8 @@ class SentimentBias(Metric):
         """
         # TODO: Offer additional sentiment classifiers besides VaderSentiment
         assert classifier in [
-            "vader"
-        ], "langfair: Currently, only 'vader' classifier is supported."
+            "vader", "roberta"
+        ], "langfair: Currently, only 'vader' and 'roberta' classifiers are supported."
         assert sentiment in [
             "pos",
             "neg",
@@ -88,8 +90,10 @@ class SentimentBias(Metric):
 
         elif classifier == "vader":
             from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-
             self.classifier_instance = SentimentIntensityAnalyzer()
+
+        elif classifier == "roberta": #New: Adding Roberta
+            self.classifier_instance = pipeline("sentiment-analysis", model="siebert/sentiment-roberta-large-english")
 
     def evaluate(self, texts1: List[str], texts2: List[str]) -> float:
         """
@@ -150,9 +154,17 @@ class SentimentBias(Metric):
             scores = [self.classifier_instance.polarity_scores(text) for text in texts]
             return [score[self.sentiment] for score in scores]
 
+        elif self.classifier == "roberta":  #New: Sentiment score for Roberta
+            results = self.classifier_instance(texts, return_all_scores=True)
+            if self.sentiment == "pos":
+                return [r[1]["score"] for r in results]  # Positive sentiment is always at index 1
+            return [r[0]["score"] for r in results]  # Negative sentiment is always at index 0
+
     @staticmethod
     def _wasserstein_1_dist(array1, array2):
         """Compute Wasserstein-1 distance"""
         a1_sorted = np.sort(np.array(array1))
         a2_sorted = np.sort(np.array(array2))
         return np.mean(np.abs(a1_sorted - a2_sorted))
+
+
