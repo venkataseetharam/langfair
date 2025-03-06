@@ -17,7 +17,7 @@ from typing import Any, List, Optional
 import numpy as np
 
 from langfair.metrics.counterfactual.metrics.baseclass.metrics import Metric
-from transformers import pipeline  # New: Import Hugging Face pipeline
+from transformers import pipeline  
 
 
 
@@ -64,7 +64,6 @@ class SentimentBias(Metric):
             accept a list of strings as an input and output a list of floats of equal length. If provided, this takes precedence
             over `classifier`.
         """
-        # TODO: Offer additional sentiment classifiers besides VaderSentiment
         assert classifier in [
             "vader", "roberta"
         ], "langfair: Currently, only 'vader' and 'roberta' classifiers are supported."
@@ -92,7 +91,7 @@ class SentimentBias(Metric):
             from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
             self.classifier_instance = SentimentIntensityAnalyzer()
 
-        elif classifier == "roberta": #New: Adding Roberta
+        elif classifier == "roberta":
             self.classifier_instance = pipeline("sentiment-analysis", model="siebert/sentiment-roberta-large-english")
 
     def evaluate(self, texts1: List[str], texts2: List[str]) -> float:
@@ -154,11 +153,11 @@ class SentimentBias(Metric):
             scores = [self.classifier_instance.polarity_scores(text) for text in texts]
             return [score[self.sentiment] for score in scores]
 
-        elif self.classifier == "roberta":  #New: Sentiment score for Roberta
+        elif self.classifier == "roberta": 
             results = self.classifier_instance(texts, return_all_scores=True)
             if self.sentiment == "pos":
-                return [r[1]["score"] for r in results]  # Positive sentiment is always at index 1
-            return [r[0]["score"] for r in results]  # Negative sentiment is always at index 0
+                return [r[1]["score"] for r in results]
+            return [r[0]["score"] for r in results]
 
     @staticmethod
     def _wasserstein_1_dist(array1, array2):
