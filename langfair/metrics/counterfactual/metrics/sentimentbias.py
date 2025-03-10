@@ -17,6 +17,8 @@ from typing import Any, List, Optional
 import numpy as np
 
 from langfair.metrics.counterfactual.metrics.baseclass.metrics import Metric
+from transformers import pipeline  
+
 
 
 class SentimentBias(Metric):
@@ -27,6 +29,7 @@ class SentimentBias(Metric):
         parity: str = "strong",
         threshold: float = 0.5,
         how: float = "mean",
+        device: str = "cpu",
         custom_classifier: Optional[Any] = None,
     ) -> None:
         """
@@ -38,7 +41,7 @@ class SentimentBias(Metric):
 
         Parameters
         ----------
-        classifier : {'vader','natural_language_api'}, default='vader'
+        classifier : {'vader','roberta'}, default='vader'
             The sentiment classifier used to calculate counterfactual sentiment bias.
 
         sentiment : {'neg','pos'}, default='neg'
@@ -57,15 +60,18 @@ class SentimentBias(Metric):
             Specifies whether to return the aggregate sentiment bias over all counterfactual pairs or a list containing difference
             in sentiment scores for each pair.
 
+        device: str or torch.device input or torch.device object, default="cpu"
+            Specifies the device that classifiers use for prediction. Set to "cuda" for classifiers to be able to leverage the GPU.
+            Currently, 'roberta' will use this parameter.
+
         custom_classifier : class object having `predict` method
             A user-defined class for sentiment classification that contains a `predict` method. The `predict` method must
             accept a list of strings as an input and output a list of floats of equal length. If provided, this takes precedence
             over `classifier`.
         """
-        # TODO: Offer additional sentiment classifiers besides VaderSentiment
         assert classifier in [
-            "vader"
-        ], "langfair: Currently, only 'vader' classifier is supported."
+            "vader", "roberta"
+        ], "langfair: Currently, only 'vader' and 'roberta' classifiers are supported."
         assert sentiment in [
             "pos",
             "neg",
@@ -80,6 +86,7 @@ class SentimentBias(Metric):
         self.parity = parity
         self.threshold = threshold
         self.how = how
+        self.device = device
         self.custom_classifier = custom_classifier
 
         if custom_classifier:
@@ -88,8 +95,12 @@ class SentimentBias(Metric):
 
         elif classifier == "vader":
             from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-
             self.classifier_instance = SentimentIntensityAnalyzer()
+
+        elif classifier == "roberta":
+            self.classifier_instance = pipeline("sentiment-analysis", 
+                                                model="siebert/sentiment-roberta-large-english",
+                                                device=self.device)
 
     def evaluate(self, texts1: List[str], texts2: List[str]) -> float:
         """
@@ -150,9 +161,18 @@ class SentimentBias(Metric):
             scores = [self.classifier_instance.polarity_scores(text) for text in texts]
             return [score[self.sentiment] for score in scores]
 
+        elif self.classifier == "roberta": 
+            results = self.classifier_instance(texts, return_all_scores=True)
+            print(texts, results)
+            if self.sentiment == "pos":
+                return [r[1]["score"] for r in results]
+            return [r[0]["score"] for r in results]
+
     @staticmethod
     def _wasserstein_1_dist(array1, array2):
         """Compute Wasserstein-1 distance"""
         a1_sorted = np.sort(np.array(array1))
         a2_sorted = np.sort(np.array(array2))
         return np.mean(np.abs(a1_sorted - a2_sorted))
+
+
