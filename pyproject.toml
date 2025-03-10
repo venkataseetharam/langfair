@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "langfair"
-version = "0.4.0"
+version = "0.5.1"
 description = "LangFair is a Python library for conducting use-case level LLM bias and fairness assessments"
 readme = "README.md"
 authors = ["Dylan Bouchard <dylan.bouchard@cvshealth.com>",
@@ -15,7 +15,7 @@ homepage = "https://github.com/cvs-health/langfair"
 documentation = "https://cvs-health.github.io/langfair/latest/index.html"
 license = "Apache-2.0 AND MIT"
 classifiers = [
-    "Programming Language :: Python :: 5 :: Only",
+    "Programming Language :: Python :: 3 :: Only",
     "Operating System :: OS Independent",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Software Development :: Libraries :: Python Modules"
