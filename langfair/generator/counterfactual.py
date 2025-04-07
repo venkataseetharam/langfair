@@ -578,7 +578,7 @@ class CounterfactualGenerator(ResponseGenerator):
         Creates counterfactual variations based on a dictionary of reference lists.
         """
         ref_dict = {key: [t.lower() for t in val] for key, val in ref_dict.items()}
-        lower_tokens = word_tokenize(text)
+        lower_tokens = word_tokenize(text.lower())
 
         ref_values = {
             val: idx for key in ref_dict for idx, val in enumerate(ref_dict[key])
