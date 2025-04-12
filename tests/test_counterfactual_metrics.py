@@ -27,11 +27,11 @@ from langfair.metrics.counterfactual.metrics import (
     SentimentBias,
 )
 
-datafile_path = "tests/data/counterfactual/counterfactual_data_file.json"
+datafile_path = "data/counterfactual/counterfactual_data_file.json"
 with open(datafile_path, "r") as f:
     data = json.load(f)
 
-actual_result_file_path = "tests/data/counterfactual/counterfactual_results_file.json"
+actual_result_file_path = "data/counterfactual/counterfactual_results_file.json"
 with open(actual_result_file_path, "r") as f:
     actual_results = json.load(f)
 
@@ -94,6 +94,20 @@ def test_CounterfactualMetrics():
     counterfactualmetrics = CounterfactualMetrics(metrics=metrics)
     result = counterfactualmetrics.evaluate(
         data["text1"], data["text2"], attribute="race"
+    )
+    score = result["metrics"]
+    ans = actual_results["test6"]["metrics"]
+    assert all([abs(score[key] - ans[key]) < 1e-5 for key in ans])
+
+def test_CounterfactualMetrics_ClassifierSupport():
+    metrics = [
+        "Rougel",
+        "Bleu",
+        "Sentiment Bias",
+    ]
+    counterfactualmetrics = CounterfactualMetrics(metrics=metrics)
+    result = counterfactualmetrics.evaluate(
+        data["text1"], data["text2"], attribute="race", sentiment_classifier="vader"
     )
     score = result["metrics"]
     ans = actual_results["test6"]["metrics"]

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, Union, Optional
 
 import numpy as np
 
@@ -65,6 +65,7 @@ class CounterfactualMetrics:
         texts2: list,
         attribute: str = None,
         return_data: bool = False,
+        sentiment_classifier: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         This method evaluate the counterfactual metrics values for the provided pair of texts.
@@ -110,19 +111,26 @@ class CounterfactualMetrics:
         metric_values = {}
         response_scores = {"texts1": texts1, "texts2": texts2}
         for metric in self.metrics:
-            if (
-                metric.name in ["Bleu Similarity", "RougeL Similarity"]
-                and self.neutralize_tokens
-            ):
-                scores = metric.evaluate(texts1=masked_texts1, texts2=masked_texts2)
-            else:
-                scores = metric.evaluate(texts1=texts1, texts2=texts2)
-            response_scores[metric.name] = scores
-
             if metric.name == "Sentiment Bias":
+                if sentiment_classifier is not None:
+                    metric = metrics.SentimentBias(classifier=sentiment_classifier, how=metric.how,
+                                                    sentiment=metric.sentiment,
+                                                    parity=metric.parity,
+                                                    threshold=metric.threshold,
+                                                    device=metric.device)
+                scores = metric.evaluate(texts1=texts1, texts2=texts2)
                 metric_values[metric.name] = metric.parity_value
             else:
+                if (
+                    metric.name in ["Bleu Similarity", "RougeL Similarity"]
+                    and self.neutralize_tokens
+                ):
+                    scores = metric.evaluate(texts1=masked_texts1, texts2=masked_texts2)
+                else:
+                    scores = metric.evaluate(texts1=texts1, texts2=texts2)
                 metric_values[metric.name] = np.mean(scores)
+
+            response_scores[metric.name] = scores
 
         result = {"metrics": metric_values}
         if return_data:
