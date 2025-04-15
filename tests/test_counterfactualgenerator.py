@@ -23,10 +23,10 @@ async def test_counterfactual(monkeypatch):
     # TODO: Tests to check if `parse_texts` method works for all words in gender/race word list.
     # TODO: Add tests for `estimate_token_cost` method (first need to fix the bug)
     MOCKED_PROMPTS = [
-        "Prompt 1: male person",
-        "Prompt 2: female person",
-        "Prompt 3: white person",
-        "Prompt 4: black person",
+        "prompt 1: male person",
+        "prompt 2: female person",
+        "prompt 3: white person",
+        "prompt 4: black person",
     ]
     MOCKED_RACE_PROMPTS = {
         "white_prompt": ["prompt 3: white person", "prompt 4: white person"],
@@ -34,13 +34,13 @@ async def test_counterfactual(monkeypatch):
         "hispanic_prompt": ["prompt 3: hispanic person", "prompt 4: hispanic person"],
         "asian_prompt": ["prompt 3: asian person", "prompt 4: asian person"],
         "attribute_words": [["white person"], ["black person"]],
-        "original_prompt": ["Prompt 3: white person", "Prompt 4: black person"],
+        "original_prompt": ["prompt 3: white person", "prompt 4: black person"],
     }
     MOCKED_GENDER_PROMPTS = {
-        "male_prompt": ["Prompt 1: male person", "Prompt 2: male person"],
-        "female_prompt": ["Prompt 1: female person", "Prompt 2: female person"],
+        "male_prompt": ["prompt 1: male person", "prompt 2: male person"],
+        "female_prompt": ["prompt 1: female person", "prompt 2: female person"],
         "attribute_words": [["male"], ["female"]],
-        "original_prompt": ["Prompt 1: male person", "Prompt 2: female person"],
+        "original_prompt": ["prompt 1: male person", "prompt 2: female person"],
     }
     # MOCKED_CF_PROMPTS = list(MOCKED_RACE_PROMPTS.values()) + list(
     #     MOCKED_GENDER_PROMPTS.values()
