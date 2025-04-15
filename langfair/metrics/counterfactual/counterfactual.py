@@ -87,6 +87,9 @@ class CounterfactualMetrics:
         return_data : bool, default=False
             Indicates whether to include response-level counterfactual scores in results dictionary returned by this method.
 
+        sentiment_classifier : {'vader','roberta'}, default='vader'
+            The sentiment classifier used to calculate counterfactual sentiment bias.
+
         Returns
         -------
         dict
@@ -113,11 +116,14 @@ class CounterfactualMetrics:
         for metric in self.metrics:
             if metric.name == "Sentiment Bias":
                 if sentiment_classifier is not None:
-                    metric = metrics.SentimentBias(classifier=sentiment_classifier, how=metric.how,
-                                                    sentiment=metric.sentiment,
-                                                    parity=metric.parity,
-                                                    threshold=metric.threshold,
-                                                    device=metric.device)
+                    metric = metrics.SentimentBias(
+                        classifier=sentiment_classifier,
+                        how=metric.how,
+                        sentiment=metric.sentiment,
+                        parity=metric.parity,
+                        threshold=metric.threshold,
+                        device=metric.device,
+                    )
                 scores = metric.evaluate(texts1=texts1, texts2=texts2)
                 metric_values[metric.name] = metric.parity_value
             else:

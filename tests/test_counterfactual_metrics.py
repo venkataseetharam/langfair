@@ -74,12 +74,14 @@ def test_senitement2():
 
 
 def test_senitement3(monkeypatch):
-    MOCKED_CLASSIFIER_RESULT = [actual_results["classifier_result1"], 
-                                actual_results["classifier_result2"]]
+    MOCKED_CLASSIFIER_RESULT = [
+        actual_results["classifier_result1"],
+        actual_results["classifier_result2"],
+    ]
 
     def mock_get_classifier(*args, **kwargs):
         return MOCKED_CLASSIFIER_RESULT.pop()
-    
+
     sentiment = SentimentBias(classifier="roberta")
     monkeypatch.setattr(sentiment, "classifier_instance", mock_get_classifier)
     assert sentiment.evaluate(data["text1"], data["text2"]) == actual_results["test7"]
@@ -98,6 +100,7 @@ def test_CounterfactualMetrics():
     score = result["metrics"]
     ans = actual_results["test6"]["metrics"]
     assert all([abs(score[key] - ans[key]) < 1e-5 for key in ans])
+
 
 def test_CounterfactualMetrics_ClassifierSupport():
     metrics = [
