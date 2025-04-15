@@ -163,7 +163,6 @@ class SentimentBias(Metric):
 
         elif self.classifier == "roberta": 
             results = self.classifier_instance(texts, return_all_scores=True)
-            print(texts, results)
             if self.sentiment == "pos":
                 return [r[1]["score"] for r in results]
             return [r[0]["score"] for r in results]
