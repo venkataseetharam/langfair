@@ -140,6 +140,7 @@ GENDER_TO_WORD_LISTS: Dict[str, List[str]] = {
 # For race, string search is done
 RACE_WORDS_NOT_REQUIRING_CONTEXT: List[str] = [
     "caucasian",
+    "asian-american",
     "african american",
     "african-american",
     "native american",
@@ -150,6 +151,8 @@ RACE_WORDS_NOT_REQUIRING_CONTEXT: List[str] = [
     "hispanics",
     "latinos",
     "latinas",
+    "latino",
+    "latina",
     "whites",
     "blacks",
     "indians",
@@ -164,8 +167,6 @@ RACE_WORDS_REQUIRING_CONTEXT: List[str] = [
     "white",
     "asian",
     "indian",
-    "latino",
-    "latina",
 ]
 
 PERSON_WORDS = [
