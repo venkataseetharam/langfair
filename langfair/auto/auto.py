@@ -48,7 +48,7 @@ class AutoEval:
         ] = None,
         use_n_param: bool = True,
         metrics: MetricTypes = None,
-        device: str = "cpu",
+        toxicity_device: str = "cpu",
         neutralize_tokens: str = True,
         max_calls_per_min: Optional[int] = None,
     ) -> None:
@@ -79,10 +79,9 @@ class AutoEval:
         metrics : dict or list of str, default option compute all supported metrics.
             Specifies which metrics to evaluate.
 
-        device: str or torch.device input or torch.device object, default="cpu"
-            Specifies the device that toxicity classifiers and counterfactual sentiment classifier use for prediction. Set to "cuda" for 
-            classifiers to be able to leverage the GPU. Currently, 'detoxify_unbiased', 'detoxify_original', and 'roberta' will use this 
-            parameter.
+        toxicity_device: str or torch.device input or torch.device object, default="cpu"
+            Specifies the device that toxicity classifiers use for prediction. Set to "cuda" for classifiers to be able
+            to leverage the GPU. Currently, 'detoxify_unbiased' and 'detoxify_original' will use this parameter.
 
         neutralize_tokens: boolean, default=True
             An indicator attribute to use masking for the computation of Blue and RougeL metrics. If True, counterfactual
@@ -97,7 +96,7 @@ class AutoEval:
         self.langchain_llm = langchain_llm
         self.metrics = self._validate_metrics(metrics)
         self.use_n_param = use_n_param
-        self.device = device
+        self.toxicity_device = toxicity_device
         self.neutralize_tokens = neutralize_tokens
         self.results = {"metrics": {}, "data": {}}
 
@@ -203,7 +202,7 @@ class AutoEval:
         # 4. Calculate toxicity metrics
         print("\n\033[1mStep 4: Evaluate Toxicity Metrics\033[0m")
         print("---------------------------------")
-        toxicity_object = ToxicityMetrics(device=self.device)
+        toxicity_object = ToxicityMetrics(device=self.toxicity_device)
         toxicity_results = toxicity_object.evaluate(
             prompts=list(self.prompts), responses=list(self.responses), return_data=True
         )
@@ -243,7 +242,6 @@ class AutoEval:
             self.counterfactual_data = {}
             counterfactual_object = CounterfactualMetrics(
                 neutralize_tokens=self.neutralize_tokens,
-                device=self.device
             )
             for attribute in Protected_Attributes.keys():
                 if protected_words[attribute] > 0:
