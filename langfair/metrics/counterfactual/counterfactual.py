@@ -22,10 +22,10 @@ from langfair.metrics.counterfactual.metrics.baseclass.metrics import Metric
 
 MetricType = Union[list[str], list[Metric]]
 DefaultMetricObjects = {
-    "Cosine": metrics.CosineSimilarity(transformer="all-MiniLM-L6-v2", how="pairwise"),
-    "Rougel": metrics.RougelSimilarity(how="pairwise"),
-    "Bleu": metrics.BleuSimilarity(how="pairwise"),
-    "Sentiment Bias": metrics.SentimentBias(how="pairwise"),
+    "Cosine": metrics.CosineSimilarity,
+    "Rougel": metrics.RougelSimilarity,
+    "Bleu": metrics.BleuSimilarity,
+    "Sentiment Bias": metrics.SentimentBias,
 }
 DefaultMetricNames = list(DefaultMetricObjects.keys())
 
@@ -38,7 +38,7 @@ class CounterfactualMetrics:
         self, 
         metrics: MetricType = DefaultMetricNames, 
         neutralize_tokens: str = True,
-        sentiment_classifier: Optional[str] = None,
+        sentiment_classifier: str = "vader",
         device: str = "cpu",
     ) -> None:
         """
@@ -61,16 +61,17 @@ class CounterfactualMetrics:
             Specifies the device that classifiers use for prediction. Set to "cuda" for classifiers to be able to leverage the GPU.
             Only 'SentimentBias' class will use this parameter for 'roberta' sentiment classifier.
         """
-        self.metrics = metrics
-        if isinstance(metrics[0], str):
-            self.metric_names = metrics
-            self._validate_metrics(metrics)
-            self._default_instances()
         self.neutralize_tokens = neutralize_tokens
         if self.neutralize_tokens:
             self.cf_generator = CounterfactualGenerator()
         self.sentiment_classifier = sentiment_classifier
         self.device = device
+        
+        self.metrics = metrics
+        if isinstance(metrics[0], str):
+            self.metric_names = metrics
+            self._validate_metrics(metrics)
+            self._default_instances()
 
     def evaluate(
         self,
@@ -124,12 +125,6 @@ class CounterfactualMetrics:
         response_scores = {"texts1": texts1, "texts2": texts2}
         for metric in self.metrics:
             if metric.name == "Sentiment Bias":
-                if self.sentiment_classifier is not None:
-                    metric = metrics.SentimentBias(
-                        classifier=self.sentiment_classifier,
-                        how=metric.how,
-                        device=self.device
-                    )
                 scores = metric.evaluate(texts1=texts1, texts2=texts2)
                 metric_values[metric.name] = metric.parity_value
             else:
@@ -151,9 +146,15 @@ class CounterfactualMetrics:
 
     def _default_instances(self):
         """Define default metrics."""
+        default_parameters = {
+            "Cosine": {"transformer": "all-MiniLM-L6-v2", "how": "pairwise"},
+            "Rougel": {"how": "pairwise"},
+            "Bleu": {"how": "pairwise"},
+            "Sentiment Bias": {"classifier":self.sentiment_classifier, "device": self.device, "how":"pairwise"},
+        }
         self.metrics = []
         for name in self.metric_names:
-            self.metrics.append(DefaultMetricObjects[name])
+            self.metrics.append(DefaultMetricObjects[name](**default_parameters[name]))
 
     def _validate_metrics(self, metric_names):
         """Validate that specified metrics metrics are supported."""
