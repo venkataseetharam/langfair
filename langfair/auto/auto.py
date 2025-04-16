@@ -241,7 +241,7 @@ class AutoEval:
             self.results["metrics"]["Counterfactual"] = {}
             self.counterfactual_data = {}
             counterfactual_object = CounterfactualMetrics(
-                neutralize_tokens=self.neutralize_tokens
+                neutralize_tokens=self.neutralize_tokens,
             )
             for attribute in Protected_Attributes.keys():
                 if protected_words[attribute] > 0:

@@ -102,15 +102,15 @@ def test_CounterfactualMetrics():
     assert all([abs(score[key] - ans[key]) < 1e-5 for key in ans])
 
 
-def test_CounterfactualMetrics_ClassifierSupport():
+def test_CounterfactualMetrics_VaderClassifier():
     metrics = [
         "Rougel",
         "Bleu",
         "Sentiment Bias",
     ]
-    counterfactualmetrics = CounterfactualMetrics(metrics=metrics)
+    counterfactualmetrics = CounterfactualMetrics(metrics=metrics, sentiment_classifier="vader")
     result = counterfactualmetrics.evaluate(
-        data["text1"], data["text2"], attribute="race", sentiment_classifier="vader"
+        data["text1"], data["text2"], attribute="race"
     )
     score = result["metrics"]
     ans = actual_results["test6"]["metrics"]
