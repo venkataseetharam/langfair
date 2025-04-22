@@ -268,13 +268,14 @@ class ToxicityMetrics:
                 scores.extend(self.roberta.compute(predictions=t)["toxicity"])
             return scores
 
-        elif classifier in ["detoxify_unbiased", "detoxify_original"]:
+        elif classifier in ["detoxify_unbiased", "detoxify_original", "detoxify_multilingual"]:
             for t in texts_partition:
-                results_t = (
-                    self.detoxify_unbiased.predict(t)
-                    if classifier == "detoxify_unbiased"
-                    else self.detoxify_original.predict(t)
-                )
+                if classifier == "detoxify_unbiased":
+                    results_t = self.detoxify_unbiased.predict(t)
+                elif classifier == "detoxify_original":
+                    results_t = self.detoxify_original.predict(t)
+                elif classifier == "detoxify_multilingual":
+                    results_t = self.detoxify_multilingual.predict(t)
                 scores.extend([max(values) for values in zip(*results_t.values())])
             return scores
 
@@ -286,12 +287,6 @@ class ToxicityMetrics:
                     for r in results_t
                 ]
                 scores.extend(scores_t)
-            return scores
-
-        elif classifier == "detoxify_multilingual":
-            for t in texts_partition:
-                results_t = self.detoxify_multilingual.predict(t)
-                scores.extend([max(values) for values in zip(*results_t.values())])
             return scores
 
     @staticmethod
